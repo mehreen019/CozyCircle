@@ -72,5 +72,4 @@ export const AuthProvider = ({children}) =>{
     return <AuthContext.Provider value={value}> {children} </AuthContext.Provider>
 
 }
-export const useAuth = () => useContext(AuthContext);
-export const getAuthContext = ()=> useContext(AuthContext); //context used by the users. kinda like a getter function
+export const useAuth = () => useContext(AuthContext);export const getAuthContext = ()=> useContext(AuthContext); //context used by the users. kinda like a getter function
