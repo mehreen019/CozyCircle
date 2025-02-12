@@ -6,7 +6,7 @@ export const Home = () => {
     <div>
     <div className='hero'>
       <div className='content'>
-      <div className='textt' style={{color:'black', marginBottom:'24px'}}>YOUR EVENT MANAGEMENT SOLUTION</div>
+      <div className='textt' style={{color:'black', marginBottom:'24px'}}>COZYCIRCLE</div>
       </div>
       <Link
 
