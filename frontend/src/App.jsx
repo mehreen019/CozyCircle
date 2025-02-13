@@ -15,7 +15,7 @@ import ViewEvent from './components/ViewEvent'
 import CommonEvents from './components/CommonEvents'
 import CommonViewEvent from './components/CommonView'
 import AttendeeRegister from './components/RegisterUser'
-
+import ExploreEvents from './components/ExploreEvents'
 
 function App() {
 
@@ -37,6 +37,7 @@ function App() {
         <Route path="/addEvent" element={<AddEvent/>} />
         <Route path="/editEvent" element={<EditEvent/>} />
         <Route path="/viewEvent" element={<ViewEvent/>} />
+        <Route path="/ExploreEvent" element={<ExploreEvents/>} />
 
         
       </Routes>

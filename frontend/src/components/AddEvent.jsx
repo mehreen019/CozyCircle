@@ -7,6 +7,7 @@ import { Box, Typography, Button } from '@mui/material'
 import './Popup.css'
 import { addEvent } from '../helpers/api_communicator';
 import NavigationLink from './shared/NavigationLink';
+import { getAuthToken } from '../helpers/axios_helper';
 
 const AddEvent = () => {
 
@@ -32,10 +33,10 @@ const AddEvent = () => {
     const country = data.get("country");
     const date = data.get("date");
     const username = auth.user.username;
-
-
+    const userId = auth.user.id;
+    const rating = 0.0;
     try {
-      const response = await addEvent(name, username, description, place, city, country, date);
+      const response = await addEvent(name, username, description, place, city, country, date,userId,rating);
       console.log(response)
 
       toast.loading("Event Added Successfuly");
@@ -54,7 +55,7 @@ const AddEvent = () => {
     }
 
     //props.setTrigger(false)
-    console.log(username + " and " + name);
+    console.log(username + " and " + name + " "+userId);
   }
 
   return (

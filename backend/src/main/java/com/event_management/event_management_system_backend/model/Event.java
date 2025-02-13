@@ -18,7 +18,7 @@ public class Event {
     private String place;
     private String description;
     private Date date;
-    private float rating;
+    private double averageRating=0.0;
 
     // @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     //private List<Attendee> attendees;
@@ -35,7 +35,7 @@ public class Event {
         this.description = description;
         this.date = date;
         this.username = username;
-        this.rating = 0;
+        this.averageRating= 0;
     }
 
     public String getUsername() {
@@ -70,12 +70,12 @@ public class Event {
         this.city = city;
     }
 
-    public Float getRating() {
-        return rating;
+    public Double getRating() {
+        return averageRating;
     }
 
-    public void setRating(Float Rating) {
-        this.rating = Rating;
+    public void setRating(Double averageRating) {
+        this.averageRating = averageRating;
     }
 
     public String getCountry() {
