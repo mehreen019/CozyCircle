@@ -43,11 +43,11 @@ export const AuthProvider = ({ children }) => {
         setAuthHeader(null);
         const data = await loginUser(username, password);
         if (data) {
-            setUser({ id: data.id, username: data.username, name: data.name });
+            setUser({ id: data.id, username: data.username, name: data.name , email:data.email});
             setIsLoggedIn(true);
             setAuthHeader(data.token);
             setInExplore(false);
-            localStorage.setItem("user", JSON.stringify({ id: data.id, username: data.username, name: data.name }));
+            localStorage.setItem("user", JSON.stringify({ id: data.id, username: data.username, name: data.name , email:data.email}));
             localStorage.setItem("token", data.token);
         }
     };
