@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import java.util.Optional;
 
 import java.net.URI;
 import java.util.List;
@@ -141,5 +142,35 @@ public class AuthController {
         }
         return ResponseEntity.ok(attendees);
     }
+
+@PostMapping("/events/rate")
+public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) {
+    // Log to confirm the request is reaching this point
+    System.out.println("Received rating update request for event ID: " + ratingRequest.getId() + " with rating: " + ratingRequest.getRating());
+
+    // Validate the rating input
+    if (ratingRequest.getRating() < 0 || ratingRequest.getRating() > 5) {
+        return ResponseEntity.badRequest().body("Rating must be between 0 and 5.");
+    }
+
+    // Extract event ID from the request
+    Long eventId = ratingRequest.getId();
+
+    // Check if the event exists
+    Optional<Event> optionalEvent = eventRepository.findById(eventId);
+    if (!optionalEvent.isPresent()) {
+        return ResponseEntity.notFound().build();  // Event not found
+    }
+
+    // Event found, update the rating
+    Event event = optionalEvent.get();
+    event.setRating(ratingRequest.getRating());
+
+    // Save the updated event
+    eventRepository.save(event);
+
+    // Return a success response with the updated event
+    return ResponseEntity.ok(event);
+}
 
 }

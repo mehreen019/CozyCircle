@@ -21,4 +21,17 @@ public class EventDto {
     private String place;
     private String description;
     private Date date;
+    private Float rating;
+     
+
+    public Float getRating() {
+        return rating;
+    }
+
+    public void setRating(Float rating) {
+        this.rating = rating;
+    }
+    public Long getId(Long id ){
+          return id;
+    }
 }

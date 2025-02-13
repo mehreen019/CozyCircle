@@ -37,6 +37,7 @@ export const addEvent = async (name, username, description, place, city, country
   return data;
 };
 
+
 export const updateEvent = async (route, name, username, description, place, city, country, date) => {
   console.log("reached api "+ username + " date: "+ date)
   const res = await request("PUT",route, {name, username, description, place, city, country, date});
@@ -75,6 +76,7 @@ export const getAllEvents = async () => {
 };
 
 export const loginUser = async (username, password) => {
+    
     const res = await request("POST","/login", {username, password});
     if(res.status != 200)
     {

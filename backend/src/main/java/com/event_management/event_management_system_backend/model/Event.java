@@ -1,7 +1,7 @@
 package com.event_management.event_management_system_backend.model;
 
 import jakarta.persistence.*;
-
+import java.util.List;
 import java.util.Date;
 
 @Entity
@@ -18,6 +18,10 @@ public class Event {
     private String place;
     private String description;
     private Date date;
+    private float rating;
+
+    // @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    //private List<Attendee> attendees;
 
     public Event() {
     }
@@ -31,6 +35,7 @@ public class Event {
         this.description = description;
         this.date = date;
         this.username = username;
+        this.rating = 0;
     }
 
     public String getUsername() {
@@ -65,6 +70,14 @@ public class Event {
         this.city = city;
     }
 
+    public Float getRating() {
+        return rating;
+    }
+
+    public void setRating(Float Rating) {
+        this.rating = Rating;
+    }
+
     public String getCountry() {
         return country;
     }
@@ -72,7 +85,13 @@ public class Event {
     public void setCountry(String country) {
         this.country = country;
     }
+    /*public List<Attendee> getAttendees() {
+        return attendees;
+    }
 
+    public void setAttendees(List<Attendee> attendees) {
+        this.attendees = attendees;
+    }*/
     public String getPlace() {
         return place;
     }
