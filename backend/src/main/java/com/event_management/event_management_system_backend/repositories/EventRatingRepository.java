@@ -9,11 +9,10 @@ import java.util.Optional;
 
 @Repository
 public interface EventRatingRepository extends JpaRepository<EventRating, Long> {
-    static Optional<EventRating> findByEventIdAndUserId(Long eventId, Long userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByEventIdAndUserId'");
-    }
+    // Correct method signature without static and implementation.
+    Optional<EventRating> findByEventIdAndUserId(Long eventId, Long userId);
 
+    // Custom query to calculate the average rating for an event
     @Query("SELECT COALESCE(AVG(e.rating), 0) FROM EventRating e WHERE e.event.id = :eventId")
     double calculateAverageRating(@Param("eventId") Long eventId);
 }

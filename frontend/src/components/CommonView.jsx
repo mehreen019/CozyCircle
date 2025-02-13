@@ -1,14 +1,45 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import CustomizedInput from './shared/CustomizedInput';
-import { Box, Typography, Rating } from '@mui/material';
+import { Box, Typography, Rating, Button } from '@mui/material';
 import './Popup.css';
 import NavigationLink from './shared/NavigationLink';
 import { format } from "date-fns";
+import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
+import { request, setAuthHeader } from '../helpers/axios_helper';
 
 const CommonViewEvent = () => {
   const location = useLocation();
   const prevEvent = location?.state?.Event;
+  const auth = useAuth();
+  const [userRating, setUserRating] = useState(0);
+  const [rated, setRated] = useState(false);
+
+  const canRate = auth.isLoggedIn && prevEvent.username !== auth.user.username;
+
+  const handleRatingSubmit = async () => {
+    try {
+      console.log("Submitting rating for event ID: " + prevEvent.id + " with rating: " + userRating);
+
+      const data = { 
+        id: prevEvent.id, 
+        userId: auth.user.id, 
+        rating: userRating 
+      };
+
+      const res = await request("POST", "/events/rate", data);
+
+      if (res.status === 200) {
+        setRated(true);  // Update the UI after successful rating
+        console.log("Rating submitted successfully!");
+      } else {
+        console.error("Failed to submit rating");
+      }
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+    }
+  };
 
   return (
     <Box
@@ -42,10 +73,37 @@ const CommonViewEvent = () => {
         <Typography variant="body2" mt={1}>Average Rating: {prevEvent.rating || 0} / 5</Typography>
       </Box>
 
+      {/* Rating Input Section (If user is logged in and not event creator) */}
+      {canRate && !rated && (
+        <Box textAlign="center" mb={4}>
+          <Typography variant="h6">Rate this Event</Typography>
+          <Rating
+            value={userRating}
+            onChange={(event, newValue) => setUserRating(newValue)}
+            precision={0.5}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2 }}
+            onClick={handleRatingSubmit}
+          >
+            Submit Rating
+          </Button>
+        </Box>
+      )}
+
+      {rated && <Typography color="green">Thank you for rating!</Typography>}
+
       <Box mt={4} />
 
       {/* Back Button */}
-      <NavigationLink bg="#6D5147" to="/allEvents" text="Back" textColor="black" />
+      <NavigationLink
+        bg="#6D5147"
+        to={auth.isLoggedIn ? "/ExploreEvent" : "/"}
+        text={auth.isLoggedIn ? "Back" : "Back To Home"}
+        textColor="black"
+      />
     </Box>
   );
 };

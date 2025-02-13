@@ -184,7 +184,7 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
     Event event = optionalEvent.get();
 
     // Check if user has already rated (assuming ratingRequest contains userId)
-    Optional<EventRating> existingRating = EventRatingRepository.findByEventIdAndUserId(eventId, ratingRequest.getUserId());
+    Optional<EventRating> existingRating = eventRatingRepository.findByEventIdAndUserId(eventId, ratingRequest.getUserId());
     if (existingRating.isPresent()) {
         // Update existing rating
         EventRating rating = existingRating.get();
