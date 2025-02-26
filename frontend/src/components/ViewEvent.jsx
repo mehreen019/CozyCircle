@@ -31,15 +31,22 @@ const ViewEvent = () => {
     }
   }, [auth, navigate]);
 
-  const loadAttendees = async () =>{
+  const loadAttendees = async () => {
+    if (prevEvent.username !== auth.user.username) {
+      
+      console.error("Unauthorized access: You are not the event creator.");
+      return;
+    }
+  
     try {
-        const response = await getAttendees(`/attendees/${prevEvent.id}`);
-        console.log(response);
-        setAttendees(response);
-      } catch (error) {
-        console.error('Error loading events:', error);
-      }
-  }
+      const response = await getAttendees(`/attendees/${prevEvent.id}`);
+      console.log(response);
+      setAttendees(response);
+    } catch (error) {
+      console.error("Error loading attendees:", error);
+    }
+  };
+  
 
 
   return (
