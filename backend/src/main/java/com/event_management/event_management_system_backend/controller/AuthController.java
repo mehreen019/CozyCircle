@@ -71,10 +71,13 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
     newEvent.setDate(eventDto.getDate());
     eventDto.setRating(0);
     newEvent.setRating(0.0);
+    newEvent.setCapacity(eventDto.getCapacity());
     //newEvent.setRating(eventDto.getRating()); // Assuming you are storing the rating as averageRating in the Event entity
 
     System.out.println("new events username: " + newEvent.getUsername());
-    System.out.println("new events username: " + newEvent.getRating());
+    System.out.println("new events rating: " + newEvent.getRating());
+    System.out.println("new events capacity: " + newEvent.getCapacity());
+    System.out.println("new events aaa: " + eventDto.getCapacity());
 
     // Save the event to the repository
     Event savedEvent = eventRepository.save(newEvent);
@@ -207,4 +210,9 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
     return ResponseEntity.ok("Rating updated successfully. New average rating: " + averageRating);
 }
 
+    @PutMapping("/events/{id}/capacity")
+    public ResponseEntity<?> updateEventCapacity(@PathVariable Long id, @RequestParam int capacity) {
+        adminService.updateEventCapacity(id, capacity);
+        return ResponseEntity.ok("Event capacity updated successfully");
+    }
 }

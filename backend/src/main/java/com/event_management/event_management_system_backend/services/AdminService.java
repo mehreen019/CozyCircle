@@ -57,4 +57,8 @@ public class AdminService {
 
         return adminMapper.toAdminDto(aadmin);
     }
+
+    public void updateEventCapacity(Long eventId, int newCapacity) {
+        // Implementation of updateEventCapacity method
+    }
 }

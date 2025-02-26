@@ -3,6 +3,7 @@ package com.event_management.event_management_system_backend.model;
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.Date;
+import javax.persistence.Column;
 
 @Entity
 public class Event {
@@ -19,6 +20,7 @@ public class Event {
     private String description;
     private Date date;
     private double averageRating=0.0;
+    private int capacity;
 
     // @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     //private List<Attendee> attendees;
@@ -26,7 +28,7 @@ public class Event {
     public Event() {
     }
 
-    public Event(Long id, String name, String city, String country, String place, String description, Date date, String username) {
+    public Event(Long id, String name, String city, String country, String place, String description, Date date, String username, int capacity) {
         this.id = id;
         this.name = name;
         this.city = city;
@@ -36,6 +38,7 @@ public class Event {
         this.date = date;
         this.username = username;
         this.averageRating= 0;
+        this.capacity= capacity;
     }
 
     public String getUsername() {
@@ -114,5 +117,13 @@ public class Event {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
     }
 }
