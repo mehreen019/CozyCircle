@@ -6,7 +6,10 @@ import com.event_management.event_management_system_backend.mapper.AttendeeMappe
 import com.event_management.event_management_system_backend.mapper.EventMapper;
 import com.event_management.event_management_system_backend.model.Attendee;
 import com.event_management.event_management_system_backend.model.Event;
+import com.event_management.event_management_system_backend.model.EventRating;
+import com.event_management.event_management_system_backend.repositories.AdminRepository;
 import com.event_management.event_management_system_backend.repositories.AttendeeRepository;
+import com.event_management.event_management_system_backend.repositories.EventRatingRepository;
 import com.event_management.event_management_system_backend.repositories.EventRepository;
 import com.event_management.event_management_system_backend.services.AdminService;
 import jakarta.validation.Valid;
@@ -16,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import java.util.Optional;
 
 import java.net.URI;
 import java.util.List;
@@ -29,6 +33,8 @@ public class AuthController {
     private final EventMapper eventMapper;
     private final AttendeeMapper attendeeMapper;
     private final AttendeeRepository attendeeRepository;
+    private final EventRatingRepository eventRatingRepository;
+    private final AdminRepository adminRepository;
 
     @PostMapping("/login")
     public ResponseEntity<AdminDto> login(@RequestBody @Valid CredentialsDto credentialsDto){
@@ -47,18 +53,37 @@ public class AuthController {
     }
 
     @PostMapping("/addevent")
-    public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
-        System.out.println(eventDto);
+public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
+    System.out.println("the event     "+eventDto);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        Event newEvent = eventMapper.eventDtoToEvent(eventDto);
-        System.out.println("new events username: "+ newEvent.getUsername());
+    // Get the authenticated user's username
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String username = authentication.getName();
 
-        Event savedEvent = eventRepository.save(newEvent);
-        System.out.println("saved events date: "+ savedEvent.getDate());
-        return ResponseEntity.ok(eventDto);
-    }
+    // Manually create a new Event instance and assign values
+    Event newEvent = new Event();
+    newEvent.setUsername(eventDto.getUsername()); // Set the username of the logged-in user
+    newEvent.setName(eventDto.getName());
+    newEvent.setCity(eventDto.getCity());
+    newEvent.setCountry(eventDto.getCountry());
+    newEvent.setPlace(eventDto.getPlace());
+    newEvent.setDescription(eventDto.getDescription());
+    newEvent.setDate(eventDto.getDate());
+    eventDto.setRating(0);
+    newEvent.setRating(0.0);
+    //newEvent.setRating(eventDto.getRating()); // Assuming you are storing the rating as averageRating in the Event entity
+
+    System.out.println("new events username: " + newEvent.getUsername());
+    System.out.println("new events username: " + newEvent.getRating());
+
+    // Save the event to the repository
+    Event savedEvent = eventRepository.save(newEvent);
+    System.out.println("saved events date: " + savedEvent.getDate());
+   
+    // Return the saved event details in response
+    return ResponseEntity.ok(eventDto);
+}
+
 
     @GetMapping("/getevent")
     public ResponseEntity<List<EventDto>> getEvents(){
@@ -141,5 +166,45 @@ public class AuthController {
         }
         return ResponseEntity.ok(attendees);
     }
+
+@PostMapping("/events/rate")
+public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) {
+    System.out.println("Received rating update request for event ID: " + ratingRequest.getId() + " with rating: " + ratingRequest.getRating());
+
+    if (ratingRequest.getRating() < 0 || ratingRequest.getRating() > 5) {
+        return ResponseEntity.badRequest().body("Rating must be between 0 and 5.");
+    }
+
+    Long eventId = ratingRequest.getId();
+    Optional<Event> optionalEvent = eventRepository.findById(eventId);
+    if (!optionalEvent.isPresent()) {
+        return ResponseEntity.notFound().build();
+    }
+
+    Event event = optionalEvent.get();
+
+    // Check if user has already rated (assuming ratingRequest contains userId)
+    Optional<EventRating> existingRating = eventRatingRepository.findByEventIdAndUserId(eventId, ratingRequest.getUserId());
+    if (existingRating.isPresent()) {
+        // Update existing rating
+        EventRating rating = existingRating.get();
+        rating.setRating(ratingRequest.getRating());
+        eventRatingRepository.save(rating);
+    } else {
+        // Save new rating
+        EventRating newRating = new EventRating();
+        newRating.setEvent(event);
+        newRating.setUser(adminRepository.findById(ratingRequest.getUserId()).orElse(null)); // Fetch user
+        newRating.setRating(ratingRequest.getRating());
+        eventRatingRepository.save(newRating);
+    }
+
+    // Recalculate average rating
+    double averageRating = eventRatingRepository.calculateAverageRating(eventId);
+    event.setRating(averageRating);
+    eventRepository.save(event);
+
+    return ResponseEntity.ok("Rating updated successfully. New average rating: " + averageRating);
+}
 
 }

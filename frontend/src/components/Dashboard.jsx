@@ -20,6 +20,7 @@ const Dashboard = () => {
   console.log(getAuthToken());
 
   useEffect(() => {
+    console.log(auth.user);
     if (!auth?.user) {
       return navigate("*");
     }
