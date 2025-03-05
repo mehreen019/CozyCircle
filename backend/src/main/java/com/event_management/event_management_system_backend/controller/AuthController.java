@@ -206,6 +206,8 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
     double averageRating = eventRatingRepository.calculateAverageRating(eventId);
     event.setRating(averageRating);
     eventRepository.save(event);
+    event.setTotal_ratings(event.getTotal_ratings() + 1);
+    eventRepository.save(event);
 
     return ResponseEntity.ok("Rating updated successfully. New average rating: " + averageRating);
 }
