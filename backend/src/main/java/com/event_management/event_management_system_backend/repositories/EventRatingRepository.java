@@ -15,4 +15,8 @@ public interface EventRatingRepository extends JpaRepository<EventRating, Long> 
     // Custom query to calculate the average rating for an event
     @Query("SELECT COALESCE(AVG(e.rating), 0) FROM EventRating e WHERE e.event.id = :eventId")
     double calculateAverageRating(@Param("eventId") Long eventId);
+
+    // Custom query to count the number of ratings for a specific event
+    @Query("SELECT COUNT(e) FROM EventRating e WHERE e.event.id = :eventId")
+    long countRatingsByEventId(@Param("eventId") Long eventId);
 }

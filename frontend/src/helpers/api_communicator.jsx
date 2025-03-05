@@ -122,3 +122,18 @@ export const signupUser = async (
     return data;
 };
   
+export const getTotalRatings = async (eventId) => {
+  console.log("reached gettotalratings "+ eventId)
+  const res = await request("GET", `/count/${eventId}`, {});
+  if(res.status != 200)
+  {
+      throw new Error("Unable to get total ratings");
+  }
+
+  const data = await res.data;
+  return data;
+};
+
+
+
+

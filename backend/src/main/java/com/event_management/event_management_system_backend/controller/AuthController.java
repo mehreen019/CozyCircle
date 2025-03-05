@@ -21,6 +21,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
+import com.event_management.event_management_system_backend.services.EventRatingService;
+
 import java.net.URI;
 import java.util.List;
 
@@ -35,6 +37,8 @@ public class AuthController {
     private final AttendeeRepository attendeeRepository;
     private final EventRatingRepository eventRatingRepository;
     private final AdminRepository adminRepository;
+
+    private final EventRatingService ratingService;
 
     @PostMapping("/login")
     public ResponseEntity<AdminDto> login(@RequestBody @Valid CredentialsDto credentialsDto){
@@ -217,4 +221,11 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
         adminService.updateEventCapacity(id, capacity);
         return ResponseEntity.ok("Event capacity updated successfully");
     }
+
+    @GetMapping("/count/{eventId}")
+    public ResponseEntity<Long> getTotalRatings(@PathVariable Long eventId) {
+        Long totalCount = ratingService.getTotalCountOfRatings(eventId);
+        return ResponseEntity.ok(totalCount);
+    }
+
 }
