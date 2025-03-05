@@ -19,7 +19,7 @@ const Header = () => {
     <>
       <AppBar sx={{ bgcolor: "transparent", position: "static", boxShadow: "none" }}>
         <Toolbar sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
-        <Menu />
+        {auth?.isLoggedIn && <Menu />}
           <div>
             {auth?.isLoggedIn ? (
               <>
