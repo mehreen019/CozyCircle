@@ -19,6 +19,7 @@ import ExploreEvents from './components/ExploreEvents'
 import TotalRatingsPage from './components/dummy'
 import EventRankings from './components/EventRankings'
 import EventAnalytics from './components/EventAnalytics'
+import CategoryApp from './components/CategoryApp'
 
 function App() {
 
@@ -46,6 +47,7 @@ function App() {
         {/* New routes for event rankings and analytics */}
         <Route path="/events/rankings" element={<EventRankings/>} />
         <Route path="/events/analytics" element={<EventAnalytics/>} />
+        <Route path="/events/categories" element={<CategoryApp/>} />
       </Routes>
     </main>
   )

@@ -5,6 +5,7 @@ import com.event_management.event_management_system_backend.model.admin;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,17 @@ public interface EventRepository extends JpaRepository<Event, Long> {
            "LEFT JOIN attendee a ON e.id = a.eventid " +
            "GROUP BY e.id", nativeQuery = true)
     List<Map<String, Object>> findAllEventsWithAllRankings();
+
+
+    @Query(value = "SELECT e.category, COUNT(*) AS eventCount " +
+    "FROM event e " +  // Note: lowercase "event" instead of "Event"
+    "WHERE e.username = :username " +
+    "GROUP BY e.category " +
+    "WITH ROLLUP", 
+    nativeQuery = true)
+List<Object[]> getEventCategoryCountWithRollup(@Param("username") String username);
+
+
 }
 
 

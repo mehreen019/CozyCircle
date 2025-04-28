@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getAllEventRankings } from '../helpers/ranking_api';
 import NavigationLink from './shared/NavigationLink';
+import CategorySection from './CategorySection';
+import { Calendar, Users, Video, Network } from 'lucide-react';
 import { 
   Grid, 
   Paper, 
@@ -18,10 +20,16 @@ import {
 } from '@mui/material';
 
 const EventAnalytics = () => {
+  // Event rankings state
   const [rankings, setRankings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
+  // Categories state
+  const [categories, setCategories] = useState([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(null);
+
   const navigate = useNavigate();
   const auth = useAuth();
 
@@ -31,6 +39,7 @@ const EventAnalytics = () => {
       return;
     }
     loadRankings();
+    loadCategories();
   }, [auth, navigate]);
 
   const loadRankings = async () => {
@@ -38,11 +47,31 @@ const EventAnalytics = () => {
       setLoading(true);
       const data = await getAllEventRankings();
       setRankings(data);
-      setLoading(false);
     } catch (error) {
       console.error('Error loading rankings:', error);
       setError('Failed to load event analytics. Please try again later.');
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      setIsLoadingCategories(true);
+      // Simulated API call with mock data
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const mockCategories = [
+        { id: 1, name: 'Conferences', eventCount: 8, icon: 'Calendar' },
+        { id: 2, name: 'Workshops', eventCount: 5, icon: 'Users' },
+        { id: 3, name: 'Networking', eventCount: 3, icon: 'Network' },
+        { id: 4, name: 'Webinars', eventCount: 12, icon: 'Video' },
+      ];
+      setCategories(mockCategories);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      setCategoriesError('Failed to load event categories.');
+    } finally {
+      setIsLoadingCategories(false);
     }
   };
 
@@ -60,7 +89,7 @@ const EventAnalytics = () => {
   const largestEvents = [...rankings].sort((a, b) => a.capacityRank - b.capacityRank).slice(0, 5);
   const mostAvailableEvents = [...rankings].sort((a, b) => a.availableCapacityRank - b.availableCapacityRank).slice(0, 5);
 
-  // Calculate some aggregate stats
+  // Calculate aggregate stats
   const totalEvents = rankings.length;
   const totalAttendees = rankings.reduce((sum, event) => sum + (event.attendeeCount || 0), 0);
   const totalCapacity = rankings.reduce((sum, event) => sum + event.capacity, 0);
@@ -81,10 +110,16 @@ const EventAnalytics = () => {
               text="View Detailed Rankings"
               textColor="black"
             />
+            <NavigationLink
+              bg="#AE9D99"
+              to="/events/categories"
+              text="View Detailed Categories"
+              textColor="black"
+            />
           </Box>
         </Grid>
 
-        {/* Summary Stats */}
+        {/* Summary Stats Cards */}
         <Grid item xs={12} sm={6} md={3}>
           <Card elevation={3}>
             <CardContent>
@@ -129,6 +164,9 @@ const EventAnalytics = () => {
           </Card>
         </Grid>
 
+        {/* Category Section */}
+        
+
         {/* Top Events Lists */}
         <Grid item xs={12} md={6}>
           <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
@@ -156,8 +194,7 @@ const EventAnalytics = () => {
               ))}
             </List>
           </Paper>
-        </Grid>
-        
+        </Grid>    
         <Grid item xs={12} md={6}>
           <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
             <Typography variant="h6" gutterBottom>

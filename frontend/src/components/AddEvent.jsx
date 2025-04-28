@@ -33,11 +33,12 @@ const AddEvent = () => {
     const country = data.get("country");
     const date = data.get("date");
     const capacity = data.get("capacity");
+    const category = data.get("category");
     const username = auth.user.username;
     const userId = auth.user.id;
     const rating = 0.0;
     try {
-      const response = await addEvent(name, username, description, place, city, country, date,userId,rating,capacity);
+      const response = await addEvent(name, username, description, place, city, country, date,userId,rating,capacity,category);
       console.log(response)
 
       toast.loading("Event Added Successfuly");
@@ -88,6 +89,7 @@ const AddEvent = () => {
             New Event
             </Typography>
             <CustomizedInput type="name" name="name" label="Name" />
+            <CustomizedInput type="category" name="category" label="Category" />
             <CustomizedInput type="description" name="description" label="Description" />
             <CustomizedInput type="place" name="place" label="Place" />
             <CustomizedInput type="city" name="city" label="City" />

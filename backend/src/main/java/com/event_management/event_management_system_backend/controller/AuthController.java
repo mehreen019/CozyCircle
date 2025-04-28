@@ -16,6 +16,8 @@ import com.event_management.event_management_system_backend.services.EventRankin
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 import com.event_management.event_management_system_backend.services.EventRatingService;
+import com.event_management.event_management_system_backend.services.EventService;
 
 import java.net.URI;
 import java.util.List;
@@ -35,6 +38,7 @@ import java.util.Date;
 @RestController
 public class AuthController {
     private final AdminService adminService;
+    private final EventService eventService ;
     private final UserAuthenticationProvider userAuthenticationProvider;
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
@@ -81,6 +85,7 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
     eventDto.setRating(0);
     newEvent.setRating(0.0);
     newEvent.setCapacity(eventDto.getCapacity());
+    newEvent.setCategory(eventDto.getCategory());
     //newEvent.setRating(eventDto.getRating()); // Assuming you are storing the rating as averageRating in the Event entity
 
     System.out.println("new events username: " + newEvent.getUsername());
@@ -242,7 +247,7 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
     public ResponseEntity<List<EventRankingDto>> getEventsRankedByAttendeeCount() {
         return ResponseEntity.ok(rankingService.getEventsRankedByAttendeeCount());
     }
-
+  
     @GetMapping("/events/ranked/capacity")
     public ResponseEntity<List<EventRankingDto>> getEventsRankedByCapacity() {
         return ResponseEntity.ok(rankingService.getEventsRankedByCapacity());
@@ -296,4 +301,11 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
             return ResponseEntity.ok(0.0); // Return 0 if no rating exists
         }
     }
+    /// a api for the rollup
+    @CrossOrigin(origins = "*") 
+    @GetMapping("/events/category/count")
+     public ResponseEntity<List<CategoryCountDto>> getEventCategoryCount(@RequestParam String username) {
+    List<CategoryCountDto> categoryCount = eventService.getEventCategoryCountForUser(username);
+    return ResponseEntity.ok(categoryCount);
+}
 }
