@@ -19,6 +19,7 @@
     "dom-helpers": "^5.2.1",
     "frontend": "file:",
     "react": "^18.3.1",
+    "react-datepicker": "^8.3.0",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.25.1",

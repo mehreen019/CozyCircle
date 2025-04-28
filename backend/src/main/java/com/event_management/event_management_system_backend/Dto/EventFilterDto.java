@@ -15,6 +15,7 @@ public class EventFilterDto {
     private String name;
     private String city;
     private String country;
+    private String rating;
     private Double minRating;
     private Double maxRating;
     private Date startDate;

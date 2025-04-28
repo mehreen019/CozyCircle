@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import { getAllEvents, addAttendee } from '../helpers/api_communicator';
+
+import { getAllEvents, addAttendee, filterEvents, searchEvents } from '../helpers/api_communicator';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FilterPanel from './FilterPanel';
-import './styles/ExploreEvents.css';
+import '../styles/ExploreEvents.css';
 
 const ExploreEvents = () => {
   const [events, setEvents] = useState([]);
@@ -43,13 +43,14 @@ const ExploreEvents = () => {
     try {
       // If a search term is provided, use the search endpoint
       if (filters.searchTerm && filters.searchTerm.trim() !== '') {
-        const response = await axios.get(`/search?term=${encodeURIComponent(filters.searchTerm)}`);
-        setEvents(formatEvents(response.data));
+        const response = await searchEvents(filters.searchTerm);
+        setEvents(formatEvents(response));
       } else {
         // Otherwise use the filter endpoint with the current filter state 
         const filterParams = prepareFilterParams();
-        const response = await axios.post('/filter', filterParams);
-        setEvents(formatEvents(response.data));
+        const response = await filterEvents(filterParams);
+        console.log("Filtered events:", response);
+        setEvents(formatEvents(response));
       }
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -68,7 +69,7 @@ const ExploreEvents = () => {
 
   // Format events data
   const formatEvents = (eventsData) => {
-    return eventsData.map(event => ({
+    return eventsData?.map(event => ({
       ...event,
       date: new Date(event.date)
     }));
@@ -177,8 +178,8 @@ const ExploreEvents = () => {
         <div className="events-grid">
           {loading ? (
             <div className="loading">Loading events...</div>
-          ) : events.length > 0 ? (
-            events.map(event => (
+          ) : events?.length > 0 ? (
+            events?.map(event => (
               <div className="event-card" key={event.id}>
                 <h3 className="event-name">{event.name}</h3>
                 <div className="event-location">
@@ -188,16 +189,16 @@ const ExploreEvents = () => {
                   {format(new Date(event.date), 'MMMM dd, yyyy')}
                 </div>
                 <div className="event-rating">
-                  <div className="stars">{renderStars(event.rating)}</div>
-                  <span className="rating-value">Rating: {event.rating.toFixed(1)}/5</span>
-                  {event.totalRatings > 0 && (
-                    <span className="total-ratings">({event.totalRatings} ratings)</span>
-                  )}
+                  <div className="stars">{renderStars(event.averageRating)}</div>
+                    <span className="rating-value">Rating: {event.averageRating.toFixed(1)}/5</span>
+                    {event?.totalRatings > 0 && (
+                      <span className="total-ratings">({event.totalRatings} ratings)</span>
+                    )}
                 </div>
                 {event.capacity && (
                   <div className="event-capacity">
                     <span className="availability">
-                      Capacity: {event.capacity}
+                      Capacity: {event?.capacity}
                     </span>
                   </div>
                 )}

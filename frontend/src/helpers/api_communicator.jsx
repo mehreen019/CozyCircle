@@ -4,12 +4,13 @@ import { request, setAuthHeader } from "./axios_helper";
 export const filterEvents = async (filterParams) => {
   console.log("Filtering events with params:", filterParams);
   try {
-    const res = await request("POST", "/filter", filterParams);
+    const res = await request("POST", "/events/filter", filterParams);
     
     if (res.status !== 200) {
       throw new Error(`Failed to filter events: ${res.status}`);
     }
     
+    console.log("Filtered events:", res.data);
     return res.data;
   } catch (error) {
     console.error("Error filtering events:", error);
@@ -21,7 +22,7 @@ export const filterEvents = async (filterParams) => {
 export const searchEvents = async (searchTerm) => {
   console.log("Searching events with term:", searchTerm);
   try {
-    const res = await request(`GET`, `/search?term=${encodeURIComponent(searchTerm)}`);
+    const res = await request(`GET`, `/events/search?term=${encodeURIComponent(searchTerm)}`);
     
     if (res.status !== 200) {
       throw new Error(`Failed to search events: ${res.status}`);
@@ -90,6 +91,7 @@ export const getEvents = async () => {
     const res = await request("GET", "/getevent", {});
     if (res.status === 200) {
       console.log("Successfully fetched created events:", res.data);
+      console.log("Events:", res.data);
       return res.data;
     } else {
       console.error("Error fetching events. Status:", res.status);

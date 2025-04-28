@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './styles/FilterPanel.css';
+import '../styles/FilterPanel.css';
 
 const FilterPanel = ({ filters, onFilterChange, onApplyFilters, onResetFilters }) => {
   const handleInputChange = (e) => {

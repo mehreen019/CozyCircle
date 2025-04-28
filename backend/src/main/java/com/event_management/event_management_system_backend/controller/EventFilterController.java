@@ -14,13 +14,13 @@ import java.util.List;
 public class EventFilterController {
     private final EventFilterService eventFilterService;
 
-    @PostMapping("/filter")
+    @PostMapping("/events/filter")
     public ResponseEntity<List<EventRankingDto>> filterEvents(@RequestBody EventFilterDto filterDto) {
         List<EventRankingDto> filteredEvents = eventFilterService.filterEvents(filterDto);
         return ResponseEntity.ok(filteredEvents);
     }
 
-    @GetMapping("/search")
+    @GetMapping("/events/search")
     public ResponseEntity<List<EventRankingDto>> searchEvents(@RequestParam(required = false) String term) {
         List<EventRankingDto> searchResults = eventFilterService.searchEvents(term);
         return ResponseEntity.ok(searchResults);
