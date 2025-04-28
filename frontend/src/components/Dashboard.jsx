@@ -52,12 +52,21 @@ const Dashboard = () => {
   return (
     <div>
       <h1 style={{color: 'black', marginBottom:'24px'}}>Dashboard </h1>
-      <NavigationLink
-                bg="#AE9D99"
-                to="/addEvent"
-                text="Add Event"
-                textColor="black"
-              />
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <NavigationLink
+          bg="#AE9D99"
+          to="/addEvent"
+          text="Add Event"
+          textColor="black"
+        />
+        <NavigationLink
+          bg="#8A7B77"
+          to="/events/analytics"
+          text="View Analytics"
+          textColor="white"
+        />
+      </div>
+      
         <div className="container">
       <div className="py-4">
         <table className="table border shadow">

@@ -12,6 +12,7 @@ import com.event_management.event_management_system_backend.repositories.Attende
 import com.event_management.event_management_system_backend.repositories.EventRatingRepository;
 import com.event_management.event_management_system_backend.repositories.EventRepository;
 import com.event_management.event_management_system_backend.services.AdminService;
+import com.event_management.event_management_system_backend.services.EventRankingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -25,6 +26,10 @@ import com.event_management.event_management_system_backend.services.EventRating
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Date;
 
 @RequiredArgsConstructor
 @RestController
@@ -37,8 +42,8 @@ public class AuthController {
     private final AttendeeRepository attendeeRepository;
     private final EventRatingRepository eventRatingRepository;
     private final AdminRepository adminRepository;
-
     private final EventRatingService ratingService;
+    private final EventRankingService rankingService;
 
     @PostMapping("/login")
     public ResponseEntity<AdminDto> login(@RequestBody @Valid CredentialsDto credentialsDto){
@@ -228,4 +233,28 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
         return ResponseEntity.ok(totalCount);
     }
 
+    @GetMapping("/events/ranked/ratings")
+    public ResponseEntity<List<EventRankingDto>> getEventsRankedByRating() {
+        return ResponseEntity.ok(rankingService.getEventsRankedByRating());
+    }
+
+    @GetMapping("/events/ranked/attendees")
+    public ResponseEntity<List<EventRankingDto>> getEventsRankedByAttendeeCount() {
+        return ResponseEntity.ok(rankingService.getEventsRankedByAttendeeCount());
+    }
+
+    @GetMapping("/events/ranked/capacity")
+    public ResponseEntity<List<EventRankingDto>> getEventsRankedByCapacity() {
+        return ResponseEntity.ok(rankingService.getEventsRankedByCapacity());
+    }
+
+    @GetMapping("/events/ranked/available-capacity")
+    public ResponseEntity<List<EventRankingDto>> getEventsRankedByAvailableCapacity() {
+        return ResponseEntity.ok(rankingService.getEventsRankedByAvailableCapacity());
+    }
+
+    @GetMapping("/events/ranked/all")
+    public ResponseEntity<List<EventRankingDto>> getEventsWithAllRankings() {
+        return ResponseEntity.ok(rankingService.getEventsWithAllRankings());
+    }
 }
