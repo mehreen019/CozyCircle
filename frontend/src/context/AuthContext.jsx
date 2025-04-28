@@ -41,14 +41,24 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (username, password) => {
         setAuthHeader(null);
+        console.log("Attempting login for:", username);
         const data = await loginUser(username, password);
         if (data) {
-            setUser({ id: data.id, username: data.username, name: data.name , email:data.email});
+            console.log("Login response:", data);
+            const user = { 
+                id: data.id, 
+                username: data.username, 
+                name: data.name, 
+                email: data.email 
+            };
+            console.log("Setting user in state:", user);
+            setUser(user);
             setIsLoggedIn(true);
             setAuthHeader(data.token);
             setInExplore(false);
-            localStorage.setItem("user", JSON.stringify({ id: data.id, username: data.username, name: data.name , email:data.email}));
+            localStorage.setItem("user", JSON.stringify(user));
             localStorage.setItem("token", data.token);
+            console.log("Saved user to localStorage:", JSON.parse(localStorage.getItem("user")));
         }
     };
 
@@ -56,10 +66,10 @@ export const AuthProvider = ({ children }) => {
         setAuthHeader(null);
         const data = await signupUser(name, username, email, password);
         if (data) {
-            setUser({ id: data.id, username: data.username, name: data.name });
+            setUser({ id: data.id, username: data.username, name: data.name, email: data.email });
             setIsLoggedIn(true);
             setAuthHeader(data.token);
-            localStorage.setItem("user", JSON.stringify({ id: data.id, username: data.username, name: data.name }));
+            localStorage.setItem("user", JSON.stringify({ id: data.id, username: data.username, name: data.name, email: data.email }));
             localStorage.setItem("token", data.token);
         }
     };

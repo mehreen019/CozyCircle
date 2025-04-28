@@ -257,4 +257,28 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
     public ResponseEntity<List<EventRankingDto>> getEventsWithAllRankings() {
         return ResponseEntity.ok(rankingService.getEventsWithAllRankings());
     }
+
+    @GetMapping("/registered-events")
+    public ResponseEntity<List<EventDto>> getRegisteredEvents(@RequestParam String email) {
+        System.out.println("Getting registered events for email: " + email);
+        
+        // Find all attendees with the given email
+        List<Attendee> attendees = attendeeRepository.findByEmail(email);
+        System.out.println("Found " + attendees.size() + " attendee records for email: " + email);
+        
+        // Extract the event IDs
+        List<Long> eventIds = attendees.stream()
+                .map(Attendee::getEventid)
+                .collect(Collectors.toList());
+        System.out.println("Event IDs: " + eventIds);
+        
+        // Find all events with those IDs
+        List<Event> events = eventRepository.findAllById(eventIds);
+        System.out.println("Found " + events.size() + " events for these IDs");
+        
+        // Convert to DTOs
+        List<EventDto> eventDtos = eventMapper.listEventToDto(events);
+        
+        return ResponseEntity.ok(eventDtos);
+    }
 }
