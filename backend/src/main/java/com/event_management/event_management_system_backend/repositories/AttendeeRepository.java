@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface AttendeeRepository extends JpaRepository<Attendee, Long> {
     List<Attendee> findByEventid(Long eventid);
-
+    List<Attendee> findByEmail(String email);
 }
