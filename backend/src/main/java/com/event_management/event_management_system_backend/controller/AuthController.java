@@ -281,4 +281,19 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
         
         return ResponseEntity.ok(eventDtos);
     }
+
+    @GetMapping("/events/{eventId}/user-rating")
+    public ResponseEntity<Double> getUserRatingForEvent(@PathVariable Long eventId, @RequestParam Long userId) {
+        System.out.println("Getting user rating for event ID: " + eventId + " and user ID: " + userId);
+        
+        Optional<EventRating> userRating = eventRatingRepository.findByEventIdAndUserId(eventId, userId);
+        
+        if (userRating.isPresent()) {
+            System.out.println("Found rating: " + userRating.get().getRating());
+            return ResponseEntity.ok(userRating.get().getRating());
+        } else {
+            System.out.println("No rating found for this user and event");
+            return ResponseEntity.ok(0.0); // Return 0 if no rating exists
+        }
+    }
 }

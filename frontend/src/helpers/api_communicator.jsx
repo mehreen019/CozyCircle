@@ -161,6 +161,23 @@ export const getRegisteredEvents = async (email) => {
   }
 };
 
+export const getUserRatingForEvent = async (eventId, userId) => {
+  console.log("Fetching user rating for event ID:", eventId, "and user ID:", userId);
+  try {
+    const res = await request("GET", `/events/${eventId}/user-rating?userId=${userId}`, {});
+    if (res.status === 200) {
+      console.log("Successfully fetched user rating:", res.data);
+      return res.data;
+    } else {
+      console.error("Error fetching user rating. Status:", res.status);
+      throw new Error(`Unable to get user rating: ${res.status}`);
+    }
+  } catch (error) {
+    console.error("Exception while fetching user rating:", error);
+    throw new Error(error.message || "Unable to get user rating");
+  }
+};
+
 
 
 
