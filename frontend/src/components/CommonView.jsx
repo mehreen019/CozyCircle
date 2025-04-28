@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import CustomizedInput from './shared/CustomizedInput';
 import { Box, Typography, Rating, Button } from '@mui/material';
@@ -7,7 +7,8 @@ import NavigationLink from './shared/NavigationLink';
 import { format } from "date-fns";
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
-import { request, setAuthHeader } from '../helpers/axios_helper';
+import { request } from '../helpers/axios_helper';
+import { getUserRatingForEvent } from '../helpers/api_communicator';
 
 const CommonViewEvent = () => {
   const location = useLocation();
@@ -15,8 +16,33 @@ const CommonViewEvent = () => {
   const auth = useAuth();
   const [userRating, setUserRating] = useState(0);
   const [rated, setRated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const canRate = auth.isLoggedIn && prevEvent.username !== auth.user.username;
+
+  // Fetch the user's previous rating when component mounts
+  useEffect(() => {
+    const fetchUserRating = async () => {
+      if (canRate && auth.user?.id) {
+        try {
+          setLoading(true);
+          const rating = await getUserRatingForEvent(prevEvent.id, auth.user.id);
+          if (rating > 0) {
+            setUserRating(rating);
+            setRated(true);
+          }
+        } catch (error) {
+          console.error("Error fetching user rating:", error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+
+    fetchUserRating();
+  }, [canRate, prevEvent.id, auth.user?.id]);
 
   const handleRatingSubmit = async () => {
     try {
@@ -39,6 +65,11 @@ const CommonViewEvent = () => {
     } catch (error) {
       console.error("Error submitting rating:", error);
     }
+  };
+
+  const handleRatingChange = (event, newValue) => {
+    setUserRating(newValue);
+    setRated(false); // Allow resubmitting if rating changes
   };
 
   return (
@@ -74,26 +105,36 @@ const CommonViewEvent = () => {
       </Box>
 
       {/* Rating Input Section (If user is logged in and not event creator) */}
-      {canRate && !rated && (
+      {canRate && !loading && (
         <Box textAlign="center" mb={4}>
-          <Typography variant="h6">Rate this Event</Typography>
+          <Typography variant="h6">
+            {rated ? "Your Rating" : "Rate this Event"}
+          </Typography>
           <Rating
             value={userRating}
-            onChange={(event, newValue) => setUserRating(newValue)}
+            onChange={handleRatingChange}
             precision={0.5}
           />
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ mt: 2 }}
-            onClick={handleRatingSubmit}
-          >
-            Submit Rating
-          </Button>
+          {!rated && (
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+              onClick={handleRatingSubmit}
+            >
+              Submit Rating
+            </Button>
+          )}
+          {rated && (
+            <Typography color="green" mt={1}>
+              {userRating > 0 ? "You've rated this event!" : ""}
+            </Typography>
+          )}
         </Box>
       )}
 
-      {rated && <Typography color="green">Thank you for rating!</Typography>}
+      {/* Loading indicator */}
+      {loading && <Typography>Loading your rating...</Typography>}
 
       <Box mt={4} />
 

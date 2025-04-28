@@ -12,6 +12,7 @@ import com.event_management.event_management_system_backend.repositories.Attende
 import com.event_management.event_management_system_backend.repositories.EventRatingRepository;
 import com.event_management.event_management_system_backend.repositories.EventRepository;
 import com.event_management.event_management_system_backend.services.AdminService;
+import com.event_management.event_management_system_backend.services.EventRankingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -25,6 +26,10 @@ import com.event_management.event_management_system_backend.services.EventRating
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Date;
 
 @RequiredArgsConstructor
 @RestController
@@ -37,8 +42,8 @@ public class AuthController {
     private final AttendeeRepository attendeeRepository;
     private final EventRatingRepository eventRatingRepository;
     private final AdminRepository adminRepository;
-
     private final EventRatingService ratingService;
+    private final EventRankingService rankingService;
 
     @PostMapping("/login")
     public ResponseEntity<AdminDto> login(@RequestBody @Valid CredentialsDto credentialsDto){
@@ -228,4 +233,67 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
         return ResponseEntity.ok(totalCount);
     }
 
+    @GetMapping("/events/ranked/ratings")
+    public ResponseEntity<List<EventRankingDto>> getEventsRankedByRating() {
+        return ResponseEntity.ok(rankingService.getEventsRankedByRating());
+    }
+
+    @GetMapping("/events/ranked/attendees")
+    public ResponseEntity<List<EventRankingDto>> getEventsRankedByAttendeeCount() {
+        return ResponseEntity.ok(rankingService.getEventsRankedByAttendeeCount());
+    }
+
+    @GetMapping("/events/ranked/capacity")
+    public ResponseEntity<List<EventRankingDto>> getEventsRankedByCapacity() {
+        return ResponseEntity.ok(rankingService.getEventsRankedByCapacity());
+    }
+
+    @GetMapping("/events/ranked/available-capacity")
+    public ResponseEntity<List<EventRankingDto>> getEventsRankedByAvailableCapacity() {
+        return ResponseEntity.ok(rankingService.getEventsRankedByAvailableCapacity());
+    }
+
+    @GetMapping("/events/ranked/all")
+    public ResponseEntity<List<EventRankingDto>> getEventsWithAllRankings() {
+        return ResponseEntity.ok(rankingService.getEventsWithAllRankings());
+    }
+
+    @GetMapping("/registered-events")
+    public ResponseEntity<List<EventDto>> getRegisteredEvents(@RequestParam String email) {
+        System.out.println("Getting registered events for email: " + email);
+        
+        // Find all attendees with the given email
+        List<Attendee> attendees = attendeeRepository.findByEmail(email);
+        System.out.println("Found " + attendees.size() + " attendee records for email: " + email);
+        
+        // Extract the event IDs
+        List<Long> eventIds = attendees.stream()
+                .map(Attendee::getEventid)
+                .collect(Collectors.toList());
+        System.out.println("Event IDs: " + eventIds);
+        
+        // Find all events with those IDs
+        List<Event> events = eventRepository.findAllById(eventIds);
+        System.out.println("Found " + events.size() + " events for these IDs");
+        
+        // Convert to DTOs
+        List<EventDto> eventDtos = eventMapper.listEventToDto(events);
+        
+        return ResponseEntity.ok(eventDtos);
+    }
+
+    @GetMapping("/events/{eventId}/user-rating")
+    public ResponseEntity<Double> getUserRatingForEvent(@PathVariable Long eventId, @RequestParam Long userId) {
+        System.out.println("Getting user rating for event ID: " + eventId + " and user ID: " + userId);
+        
+        Optional<EventRating> userRating = eventRatingRepository.findByEventIdAndUserId(eventId, userId);
+        
+        if (userRating.isPresent()) {
+            System.out.println("Found rating: " + userRating.get().getRating());
+            return ResponseEntity.ok(userRating.get().getRating());
+        } else {
+            System.out.println("No rating found for this user and event");
+            return ResponseEntity.ok(0.0); // Return 0 if no rating exists
+        }
+    }
 }
