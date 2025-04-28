@@ -25,9 +25,9 @@ export const getAttendees = async (route) => {
   return data;
 };
 
-export const addEvent = async (name, username, description, place, city, country, date,userId,rating) => {
+export const addEvent = async (name, username, description, place, city, country, date,userId,rating,capacity) => {
   console.log("reached api "+ username + " date: "+ date)
-  const res = await request("POST","/addevent", {name, username, description, place, city, country, date,userId});
+  const res = await request("POST","/addevent", {name, username, description, place, city, country, date,userId,rating,capacity});
   if(res.status != 200)
   {
       throw new Error("Unable to add event");
@@ -52,15 +52,20 @@ export const updateEvent = async (route, name, username, description, place, cit
 
 
 export const getEvents = async () => {
-  console.log("reached getevents ")
-  const res = await request("GET","/getevent", {});
-  if(res.status != 200)
-  {
-      throw new Error("Unable to get events");
+  console.log("Fetching created events");
+  try {
+    const res = await request("GET", "/getevent", {});
+    if (res.status === 200) {
+      console.log("Successfully fetched created events:", res.data);
+      return res.data;
+    } else {
+      console.error("Error fetching events. Status:", res.status);
+      throw new Error(`Unable to get events: ${res.status}`);
+    }
+  } catch (error) {
+    console.error("Exception while fetching events:", error);
+    throw new Error(error.message || "Unable to get events");
   }
-
-  const data = await res.data;
-  return data;
 };
 
 export const getAllEvents = async () => {
@@ -122,3 +127,57 @@ export const signupUser = async (
     return data;
 };
   
+export const getTotalRatings = async (eventId) => {
+  console.log("reached gettotalratings "+ eventId)
+  const res = await request("GET", `/count/${eventId}`, {});
+  if(res.status != 200)
+  {
+      throw new Error("Unable to get total ratings");
+  }
+
+  const data = await res.data;
+  return data;
+};
+
+export const getRegisteredEvents = async (email) => {
+  console.log("Fetching registered events for", email);
+  try {
+    if (!email) {
+      console.error("Email is empty or undefined");
+      throw new Error("Email is required to fetch registered events");
+    }
+    
+    const res = await request("GET", `/registered-events?email=${email}`, {});
+    if (res.status === 200) {
+      console.log("Successfully fetched registered events:", res.data);
+      return res.data;
+    } else {
+      console.error("Error fetching registered events. Status:", res.status);
+      throw new Error(`Unable to get registered events: ${res.status}`);
+    }
+  } catch (error) {
+    console.error("Exception while fetching registered events:", error);
+    throw new Error(error.message || "Unable to get registered events");
+  }
+};
+
+export const getUserRatingForEvent = async (eventId, userId) => {
+  console.log("Fetching user rating for event ID:", eventId, "and user ID:", userId);
+  try {
+    const res = await request("GET", `/events/${eventId}/user-rating?userId=${userId}`, {});
+    if (res.status === 200) {
+      console.log("Successfully fetched user rating:", res.data);
+      return res.data;
+    } else {
+      console.error("Error fetching user rating. Status:", res.status);
+      throw new Error(`Unable to get user rating: ${res.status}`);
+    }
+  } catch (error) {
+    console.error("Exception while fetching user rating:", error);
+    throw new Error(error.message || "Unable to get user rating");
+  }
+};
+
+
+
+

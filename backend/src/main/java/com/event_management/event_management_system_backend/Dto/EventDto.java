@@ -21,6 +21,8 @@ public class EventDto {
     private Date date;
     private double rating = 0;  // Renamed to 'rating' to match consistency
     private Long userId;
+    private int capacity;
+    private int total_ratings = 0;
 
     // Getter and Setter for 'id'
     public Long getId() {
@@ -110,5 +112,19 @@ public class EventDto {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+    public int getTotal_ratings() {
+        return total_ratings;
+    }
+
+    public void setTotal_ratings(int total_ratings) {
+        this.total_ratings = total_ratings;
     }
 }
