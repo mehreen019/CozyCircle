@@ -16,6 +16,7 @@ import CommonEvents from './components/CommonEvents'
 import CommonViewEvent from './components/CommonView'
 import AttendeeRegister from './components/RegisterUser'
 import ExploreEvents from './components/ExploreEvents'
+import TotalRatingsPage from './components/dummy'
 
 function App() {
 
@@ -38,6 +39,7 @@ function App() {
         <Route path="/editEvent" element={<EditEvent/>} />
         <Route path="/viewEvent" element={<ViewEvent/>} />
         <Route path="/ExploreEvent" element={<ExploreEvents/>} />
+        <Route path="/count/:eventId" element={<TotalRatingsPage/>} />
 
         
       </Routes>

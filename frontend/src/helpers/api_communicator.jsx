@@ -25,9 +25,9 @@ export const getAttendees = async (route) => {
   return data;
 };
 
-export const addEvent = async (name, username, description, place, city, country, date,userId,rating) => {
+export const addEvent = async (name, username, description, place, city, country, date,userId,rating,capacity) => {
   console.log("reached api "+ username + " date: "+ date)
-  const res = await request("POST","/addevent", {name, username, description, place, city, country, date,userId});
+  const res = await request("POST","/addevent", {name, username, description, place, city, country, date,userId,rating,capacity});
   if(res.status != 200)
   {
       throw new Error("Unable to add event");
@@ -122,3 +122,18 @@ export const signupUser = async (
     return data;
 };
   
+export const getTotalRatings = async (eventId) => {
+  console.log("reached gettotalratings "+ eventId)
+  const res = await request("GET", `/count/${eventId}`, {});
+  if(res.status != 200)
+  {
+      throw new Error("Unable to get total ratings");
+  }
+
+  const data = await res.data;
+  return data;
+};
+
+
+
+
