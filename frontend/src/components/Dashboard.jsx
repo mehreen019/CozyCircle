@@ -1,10 +1,4 @@
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
-import { getAuthToken, request } from '../helpers/axios_helper';
-import { getEvents } from '../helpers/api_communicator';
-import NavigationLink from './shared/NavigationLink';
 
 import { useState, useEffect } from 'react'
 import { useAuth} from '../context/AuthContext';
