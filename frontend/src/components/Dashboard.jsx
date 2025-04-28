@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from 'react'
 import { useAuth} from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -5,8 +7,9 @@ import { getAuthToken, request } from '../helpers/axios_helper';
 import { getEvents, getRegisteredEvents } from '../helpers/api_communicator';
 import NavigationLink from './shared/NavigationLink';
 import { Link } from "react-router-dom";
-import { format } from "date-fns";
 
+import { format } from "date-fns";
+import { PieChart, Pie, Tooltip, Cell, Legend, ResponsiveContainer } from 'recharts';
 
 const Dashboard = () => {
   const [events, setEvents] = useState([]);
@@ -24,14 +27,13 @@ const Dashboard = () => {
     console.log("Dashboard useEffect - auth user:", auth.user);
     if (!auth?.user) {
       return navigate("*");
-    }
-    else{
+    } else {
       loadEvents();
       loadRegisteredEvents();
     }
   }, [auth, navigate]);
 
-  const loadEvents = async () =>{
+  const loadEvents = async () => {
     try {
       console.log("Loading created events...");
       const response = await getEvents();
@@ -80,12 +82,12 @@ const Dashboard = () => {
       console.error('Error loading registered events:', error);
       setError("Failed to load registered events: " + error.message);
     }
-  }
+  };
 
-  const onDelete = async (id) =>{
-    await request("DELETE", `/delete/${id}`, {})
+  const onDelete = async (id) => {
+    await request("DELETE", `/delete/${id}`, {});
     loadEvents();
-  }
+  };
 
   const renderEventsTable = (eventsToRender) => {
     if (!eventsToRender || eventsToRender.length === 0) {

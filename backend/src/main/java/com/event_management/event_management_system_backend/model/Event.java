@@ -16,6 +16,7 @@ public class Event {
     private String name;
     private String city;
     private String country;
+    private String category;
     private String place;
     private String description;
     private Date date;
@@ -29,10 +30,11 @@ public class Event {
     public Event() {
     }
 
-    public Event(Long id, String name, String city, String country, String place, String description, Date date, String username, int capacity, int total_ratings) {
+    public Event(Long id, String name, String city, String country, String place, String description, Date date, String username, int capacity, int total_ratings, String category) {
         this.id = id;
         this.name = name;
         this.city = city;
+        this.category = category;
         this.country = country;
         this.place = place;
         this.description = description;
@@ -46,7 +48,12 @@ public class Event {
     public String getUsername() {
         return username;
     }
-
+    public String getCategory() {
+        return category;
+    }
+    public void setCategory(String category) {
+        this.category = category;
+    }
     public void setUsername(String username) {
         this.username = username;
     }
