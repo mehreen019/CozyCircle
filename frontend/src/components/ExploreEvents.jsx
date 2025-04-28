@@ -12,6 +12,7 @@ import '../styles/ExploreEvents.css';
 const ExploreEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reset, setReset] = useState(false);
   const [filters, setFilters] = useState({
     name: '',
     city: '',
@@ -34,8 +35,9 @@ const ExploreEvents = () => {
     } else {
       // Initial load
       fetchEvents();
+      setReset(false); // Reset the reset state after fetching events
     }
-  }, [auth, navigate]);
+  }, [auth, navigate, reset]);
 
   // Function to fetch events based on the applied filters
   const fetchEvents = async () => {
@@ -48,6 +50,8 @@ const ExploreEvents = () => {
       } else {*/
         // Otherwise use the filter endpoint with the current filter state 
         const filterParams = prepareFilterParams();
+
+        console.log("Filtered parameters:", filterParams);
         const response = await filterEvents(filterParams);
         console.log("Filtered events:", response);
         setEvents(formatEvents(response));
@@ -104,7 +108,7 @@ const ExploreEvents = () => {
 
   // Reset filters to default
   const handleResetFilters = () => {
-    setFilters({
+    const defaultFilters = {
       name: '',
       city: '',
       country: '',
@@ -116,10 +120,12 @@ const ExploreEvents = () => {
       maxCapacity: null,
       sortBy: 'rating',
       category: 'All'
-    });
-    
-    // After resetting filters, fetch all events again
-    fetchEvents();
+    };
+  
+    setFilters(defaultFilters);
+    setReset(!reset); // Trigger a re-render to reset filters
+
+    console.log("Filters reset to default values.", filters.name);
   };
 
   const handleRegisterClick = async (event) => {

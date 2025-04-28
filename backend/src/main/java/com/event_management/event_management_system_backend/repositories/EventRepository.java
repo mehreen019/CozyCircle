@@ -77,6 +77,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "WHERE (:name IS NULL OR LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
             "AND (:city IS NULL OR LOWER(e.city) LIKE LOWER(CONCAT('%', :city, '%'))) " +
             "AND (:country IS NULL OR LOWER(e.country) LIKE LOWER(CONCAT('%', :country, '%'))) " +
+            "AND (:category IS NULL OR :category = 'All' OR LOWER(e.category) = LOWER(:category)) " +
             "AND (:minRating IS NULL OR e.average_rating >= :minRating) " +
             "AND (:maxRating IS NULL OR e.average_rating <= :maxRating) " +
             "AND (:startDate IS NULL OR e.date >= :startDate) " +
@@ -96,6 +97,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("name") String name,
             @Param("city") String city,
             @Param("country") String country,
+            @Param("category") String category,
             @Param("minRating") Double minRating,
             @Param("maxRating") Double maxRating,
             @Param("startDate") Date startDate,

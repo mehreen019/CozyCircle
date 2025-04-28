@@ -23,6 +23,7 @@ public class EventDto {
     private Long userId;
     private int capacity;
     private int total_ratings = 0;
+    private String category;
 
     // Getter and Setter for 'id'
     public Long getId() {
@@ -126,5 +127,13 @@ public class EventDto {
 
     public void setTotal_ratings(int total_ratings) {
         this.total_ratings = total_ratings;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

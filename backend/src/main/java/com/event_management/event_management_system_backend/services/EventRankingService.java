@@ -74,6 +74,7 @@ public class EventRankingService {
             dto.setAverageRating(((Number) event.get("average_rating")).doubleValue());
             dto.setCapacity(((Number) event.get("capacity")).intValue());
             dto.setTotal_ratings(((Number) event.get("total_ratings")).intValue());
+            dto.setCategory((String) event.get("category"));
 
             // Map ranking properties if they exist
             if (event.containsKey("rating_rank")) {

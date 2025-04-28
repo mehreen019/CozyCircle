@@ -82,6 +82,7 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
     newEvent.setRating(0.0);
     newEvent.setCapacity(eventDto.getCapacity());
     //newEvent.setRating(eventDto.getRating()); // Assuming you are storing the rating as averageRating in the Event entity
+    newEvent.setCategory(eventDto.getCategory());
 
     System.out.println("new events username: " + newEvent.getUsername());
     System.out.println("new events rating: " + newEvent.getRating());
@@ -137,6 +138,7 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
                             event.setPlace(updatedEventDto.getPlace());
                             event.setDescription(updatedEventDto.getDescription());
                             event.setDate(updatedEventDto.getDate());
+                            event.setCategory(updatedEventDto.getCategory());
 
                             Event savedEvent = eventRepository.save(event);
                             return ResponseEntity.ok(eventMapper.eventToEventDto(savedEvent));
