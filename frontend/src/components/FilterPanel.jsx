@@ -30,12 +30,12 @@ const FilterPanel = ({ filters, onFilterChange, onApplyFilters, onResetFilters }
       <h3>Filters</h3>
       
       <div className="filter-section">
-        <label htmlFor="searchTerm">Search</label>
+        <label htmlFor="name">Name</label>
         <input
           type="text"
-          id="searchTerm"
-          name="searchTerm"
-          value={filters.searchTerm}
+          id="name"
+          name="name"
+          value={filters.name}
           onChange={handleInputChange}
           placeholder="Search events..."
         />
@@ -177,7 +177,7 @@ const FilterPanel = ({ filters, onFilterChange, onApplyFilters, onResetFilters }
 // Add PropTypes validation
 FilterPanel.propTypes = {
   filters: PropTypes.shape({
-    searchTerm: PropTypes.string,
+    name: PropTypes.string,
     city: PropTypes.string,
     country: PropTypes.string,
     minRating: PropTypes.number,

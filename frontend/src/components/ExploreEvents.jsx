@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-import { getAllEvents, addAttendee, filterEvents, searchEvents } from '../helpers/api_communicator';
+import { getAllEvents, addAttendee, filterEvents } from '../helpers/api_communicator';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -13,7 +13,7 @@ const ExploreEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    searchTerm: '',
+    name: '',
     city: '',
     country: '',
     minRating: 0,
@@ -42,16 +42,16 @@ const ExploreEvents = () => {
     setLoading(true);
     try {
       // If a search term is provided, use the search endpoint
-      if (filters.searchTerm && filters.searchTerm.trim() !== '') {
+      /*if (filters.searchTerm && filters.searchTerm.trim() !== '') {
         const response = await searchEvents(filters.searchTerm);
         setEvents(formatEvents(response));
-      } else {
+      } else {*/
         // Otherwise use the filter endpoint with the current filter state 
         const filterParams = prepareFilterParams();
         const response = await filterEvents(filterParams);
         console.log("Filtered events:", response);
         setEvents(formatEvents(response));
-      }
+      //}
     } catch (error) {
       console.error('Error fetching events:', error);
       // Fallback to getAllEvents if the filter/search API fails
@@ -78,7 +78,7 @@ const ExploreEvents = () => {
   // Prepare filter parameters for the API
   const prepareFilterParams = () => {
     return {
-      searchTerm: filters.searchTerm,
+      name: filters.name,
       category: filters.category === 'All' ? null : filters.category,
       city: filters.city || null,
       country: filters.country || null,
@@ -105,7 +105,7 @@ const ExploreEvents = () => {
   // Reset filters to default
   const handleResetFilters = () => {
     setFilters({
-      searchTerm: '',
+      name: '',
       city: '',
       country: '',
       minRating: 0,
