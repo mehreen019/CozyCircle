@@ -1,6 +1,40 @@
 import axios from "axios";
 import { request, setAuthHeader } from "./axios_helper";
 
+export const filterEvents = async (filterParams) => {
+  console.log("Filtering events with params:", filterParams);
+  try {
+    const res = await request("POST", "/events/filter", filterParams);
+    
+    if (res.status !== 200) {
+      throw new Error(`Failed to filter events: ${res.status}`);
+    }
+    
+    console.log("Filtered events:", res.data);
+    return res.data;
+  } catch (error) {
+    console.error("Error filtering events:", error);
+    throw error;
+  }
+};
+
+// Create search events API function
+export const searchEvents = async (searchTerm) => {
+  console.log("Searching events with term:", searchTerm);
+  try {
+    const res = await request(`GET`, `/events/search?term=${encodeURIComponent(searchTerm)}`);
+    
+    if (res.status !== 200) {
+      throw new Error(`Failed to search events: ${res.status}`);
+    }
+    
+    return res.data;
+  } catch (error) {
+    console.error("Error searching events:", error);
+    throw error;
+  }
+};
+
 export const addAttendee = async (eventid, name, email) => {
   console.log("reached api "+ name + " eventid: "+ eventid)
   const res = await request("POST","/addattendee", {eventid, name, email});
@@ -57,6 +91,7 @@ export const getEvents = async () => {
     const res = await request("GET", "/getevent", {});
     if (res.status === 200) {
       console.log("Successfully fetched created events:", res.data);
+      console.log("Events:", res.data);
       return res.data;
     } else {
       console.error("Error fetching events. Status:", res.status);

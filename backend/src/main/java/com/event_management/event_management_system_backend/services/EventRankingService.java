@@ -56,12 +56,12 @@ public class EventRankingService {
     }
 
     /**
-     * Convert database query results to DTOs
+     * Convert database query results to DTOs - made public for reuse
      */
-    private List<EventRankingDto> convertToEventRankingDto(List<Map<String, Object>> rankedEvents) {
+    public List<EventRankingDto> convertToEventRankingDto(List<Map<String, Object>> rankedEvents) {
         return rankedEvents.stream().map(event -> {
             EventRankingDto dto = new EventRankingDto();
-            
+
             // Map basic event properties
             dto.setId(((Number) event.get("id")).longValue());
             dto.setName((String) event.get("name"));
@@ -74,32 +74,32 @@ public class EventRankingService {
             dto.setAverageRating(((Number) event.get("average_rating")).doubleValue());
             dto.setCapacity(((Number) event.get("capacity")).intValue());
             dto.setTotal_ratings(((Number) event.get("total_ratings")).intValue());
-            
+
             // Map ranking properties if they exist
             if (event.containsKey("rating_rank")) {
                 dto.setRatingRank(((Number) event.get("rating_rank")).intValue());
             }
-            
+
             if (event.containsKey("attendee_count")) {
                 dto.setAttendeeCount(((Number) event.get("attendee_count")).intValue());
             }
-            
+
             if (event.containsKey("attendee_rank")) {
                 dto.setAttendeeRank(((Number) event.get("attendee_rank")).intValue());
             }
-            
+
             if (event.containsKey("capacity_rank")) {
                 dto.setCapacityRank(((Number) event.get("capacity_rank")).intValue());
             }
-            
+
             if (event.containsKey("available_capacity")) {
                 dto.setAvailableCapacity(((Number) event.get("available_capacity")).intValue());
             }
-            
+
             if (event.containsKey("available_capacity_rank")) {
                 dto.setAvailableCapacityRank(((Number) event.get("available_capacity_rank")).intValue());
             }
-            
+
             return dto;
         }).collect(Collectors.toList());
     }
