@@ -126,6 +126,16 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "OR LEVENSHTEIN_DISTANCE(LOWER(e.name), LOWER(:searchTerm)) <= 3",
             nativeQuery = true)
     List<Event> searchEvents(@Param("searchTerm") String searchTerm);
+
+
+
+    @Query(value = "SELECT e.category, COUNT(*) AS eventCount " +
+       "FROM event e " +  // Note: lowercase "event" instead of "Event"
+       "WHERE e.username = :username " +
+       "GROUP BY e.category " +
+       "WITH ROLLUP", 
+       nativeQuery = true)
+List<Object[]> getEventCategoryCountWithRollup(@Param("username") String username);
 }
 
 

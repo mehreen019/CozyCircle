@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 import com.event_management.event_management_system_backend.services.EventRatingService;
+import com.event_management.event_management_system_backend.services.EventService;
 
 import java.net.URI;
 import java.util.List;
@@ -37,6 +38,7 @@ import java.util.HashMap;
 @RestController
 public class AuthController {
     private final AdminService adminService;
+    private final EventService eventService;
     private final UserAuthenticationProvider userAuthenticationProvider;
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
@@ -372,6 +374,15 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
         }
     }
 
+    /// a api for the rollup
+    
+    @GetMapping("/events/category/count")
+     public ResponseEntity<List<CategoryCountDto>> getEventCategoryCount(@RequestParam String username) {
+    List<CategoryCountDto> categoryCount = eventService.getEventCategoryCountForUser(username);
+    return ResponseEntity.ok(categoryCount);
+     }
+
+
     @GetMapping("/user/score")
     public ResponseEntity<?> getUserScore(@RequestParam String email) {
         System.out.println("Getting user score for email: " + email);
@@ -485,4 +496,5 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
         
         return ResponseEntity.ok(stats);
     }
+
 }
