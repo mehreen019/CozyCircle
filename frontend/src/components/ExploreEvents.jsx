@@ -39,6 +39,7 @@ const carouselSettings = {
 const ExploreEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const [reset, setReset] = useState(false);
   const [registeredEventIds, setRegisteredEventIds] = useState([]);
 const [recommendedEvents, setRecommendedEvents] = useState([]);
@@ -98,6 +99,7 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
         
         // Now format the events
         setRecommendedEvents(formatEvents(data));
+        console.log ("rec " + recommendedEvents);
         
       } catch (error) {
         console.error('Error fetching recommendations:', error);
@@ -169,7 +171,11 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
   const handleApplyFilters = () => {
     fetchEvents();
   };
-
+  const handleNextEvent = () => {
+    
+    console.log(recommendedEvents[0].rating);
+    setCurrentEventIndex((prevIndex) => (prevIndex + 1) % recommendedEvents.length);
+  };
   // Reset filters to default
   const handleResetFilters = () => {
     const defaultFilters = {
@@ -276,112 +282,110 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
   return (
     <div className="explore-events-container">
       <h1>Explore Events</h1>
-      
+  
       <div className="explore-content">
-        <FilterPanel 
-          filters={filters} 
-          onFilterChange={handleFilterChange} 
-          onApplyFilters={handleApplyFilters}
-          onResetFilters={handleResetFilters}
-        />
-        
-        {/* Replace the ENTIRE recommended-section div with this */}
-<div className="recommended-section">
-  <h2>Recommended For You</h2>
+        {/* LEFT COLUMN */}
+        <div className="left-panel">
+                              {/* Recommendations */}
+<div className="recommendation-section fun-card-wrapper">
+  <h2 className="recommendation-heading">Recommended For You</h2>
   {recommendedLoading ? (
-    <div className="loading">Loading recommendations...</div>
-  ) : recommendedEvents.length > 0 ? (
-    <Slider {...carouselSettings} className="recommended-carousel">
-      {recommendedEvents.map(event => (
-        <div key={event.id} className="carousel-item">
-          <div className="event-card recommended-card">
-            {/* Keep your existing card content below */}
-            <h3 className="event-name">{event.name}</h3>
-            <div className="event-location">
-              {event.city}, {event.country}
-            </div>
-            <div className="event-date">
-              {format(new Date(event.date), 'MMMM dd, yyyy')}
-            </div>
-            {/* ... rest of your card content ... */}
-          </div>
-        </div>
-      ))}
-    </Slider>
-  ) : (
+    <div className="loading-recommendations">Loading...</div>
+  ) : recommendedEvents.length === 0 ? (
     <div className="no-recommendations">
-      No recommendations yet. Rate more events to get personalized suggestions!
+      Rate more events to get personalized suggestions!
+    </div>
+  ) : (
+    <div className="recommendation-card-wrapper">
+      {/* Display current event */}
+      <div className="recommendation-item">
+        <h3 className="rec-event-name">{recommendedEvents[currentEventIndex]?.name}</h3>
+        <div className="rec-event-location">
+          {recommendedEvents[currentEventIndex]?.city}, {recommendedEvents[currentEventIndex]?.country}
+        </div>
+        <div className="rec-event-date">
+          {format(new Date(recommendedEvents[currentEventIndex]?.date), 'MMMM dd, yyyy')}
+        </div>
+        <div className="rec-event-rating">
+          <div className="stars">
+            {renderStars(recommendedEvents[currentEventIndex]?.rating || 0)}
+          </div>
+          <span className="rating-value">
+            {(recommendedEvents[currentEventIndex]?.rating || 0).toFixed(1)}/5
+          </span>
+        </div>
+        <Link
+          className="view-rec-btn"
+          to={{ pathname: "/viewCommonEvent" }}
+          state={{ Event: recommendedEvents[currentEventIndex] }}
+        >
+          View Details
+        </Link>
+      </div>
+
+      {/* Next Button */}
+      {recommendedEvents.length > 1 && (
+        <button className="next-btn" onClick={handleNextEvent}>
+          Next Event
+        </button>
+      )}
     </div>
   )}
 </div>
-        <div className="events-grid">
-          {loading ? (
-            <div className="loading">Loading events...</div>
-          ) : events?.length > 0 ? (
-            events?.map(event => (
-              <div className="event-card" key={event.id}>
-                <h3 className="event-name">{event.name}</h3>
-                <div className="event-location">
-                  {event.city}, {event.country}
-                </div>
-                <div className="event-date">
-                  {format(new Date(event.date), 'MMMM dd, yyyy')}
-                </div>
-                <div className="event-rating">
-                  <div className="stars">{renderStars(event.averageRating)}</div>
+
+  
+          {/* Filter Panel */}
+          <FilterPanel 
+            filters={filters} 
+            onFilterChange={handleFilterChange} 
+            onApplyFilters={handleApplyFilters}
+            onResetFilters={handleResetFilters}
+          />
+        </div>
+  
+        {/* RIGHT COLUMN */}
+          <div className="events-grid">
+            {loading ? (
+              <div className="loading">Loading events...</div>
+            ) : events?.length > 0 ? (
+              events.map(event => (
+                <div className="event-card" key={event.id}>
+                  <h3 className="event-name">{event.name}</h3>
+                  <div className="event-location">{event.city}, {event.country}</div>
+                  <div className="event-date">{format(new Date(event.date), 'MMMM dd, yyyy')}</div>
+                  <div className="event-rating">
+                    <div className="stars">{renderStars(event.averageRating)}</div>
                     <span className="rating-value">Rating: {event.averageRating.toFixed(1)}/5</span>
-                    {event?.totalRatings > 0 && (
+                    {event.totalRatings > 0 && (
                       <span className="total-ratings">({event.totalRatings} ratings)</span>
                     )}
-                </div>
-                {event.capacity && (
-                  <div className="event-capacity">
-                    <span className="availability">
-                      Capacity: {event?.capacity}
-                    </span>
                   </div>
-                )}
-                <div className="event-actions">
-                  <Link 
-                    className="view-btn" 
-                    to={{ pathname: "/viewCommonEvent" }} 
-                    state={{ Event: event }}
-                  >
-                    View
-                  </Link>
-
-                  { auth?.user && auth?.user.username === event.username ? (
-                    <button 
-                      className="unregister-btn"
-                      disabled
-                    >
-                      Created
-                    </button>
-                  ) : registeredEventIds.includes(event.id) ? (
-                    <button 
-                      className="unregister-btn"
-                      onClick={() => handleUnregisterClick(event)}
-                    >
-                      Unregister
-                    </button>
-                  ) : (
-                    <button 
-                      className="register-btn"
-                      onClick={() => handleRegisterClick(event)}
-                    >
-                      Register
-                    </button>
+                  {event.capacity && (
+                    <div className="event-capacity">Capacity: {event.capacity}</div>
                   )}
+                  <div className="event-actions">
+                    <Link className="view-btn" to={{ pathname: "/viewCommonEvent" }} state={{ Event: event }}>
+                      View
+                    </Link>
+                    {auth?.user && auth?.user.username === event.username ? (
+                      <button className="unregister-btn" disabled>Created</button>
+                    ) : registeredEventIds.includes(event.id) ? (
+                      <button className="unregister-btn" onClick={() => handleUnregisterClick(event)}>Unregister</button>
+                    ) : (
+                      <button className="register-btn" onClick={() => handleRegisterClick(event)}>Register</button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <div className="no-events">No events found matching your criteria.</div>
-          )}
+              ))
+            ) : (
+              <div className="no-events">No events found matching your criteria.</div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    
   );
-};
-
+  
+  
+}
 export default ExploreEvents;

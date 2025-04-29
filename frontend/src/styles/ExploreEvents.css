@@ -179,60 +179,114 @@
     }
   }
   /* Recommended section */
-.recommended-section {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
 
-.recommended-section h2 {
-  color: #2c3e50;
-  margin-bottom: 1rem;
-}
-
-.recommended-grid .event-card {
-  background: white;
-  border: 2px solid #3498db;
-}
-
-.no-recommendations {
-  color: #7f8c8d;
-  padding: 1rem;
-  text-align: center;
-}
-/* ExploreEvents.css */
-.recommended-carousel {
-  padding: 0 20px;
-}
-
-.recommended-carousel .slick-list {
-  padding: 20px 0;
-}
-
-.recommended-carousel .slick-prev,
-.recommended-carousel .slick-next {
-  width: 40px;
-  height: 40px;
-  z-index: 1;
-}
-
-.recommended-carousel .slick-prev:before,
-.recommended-carousel .slick-next:before {
-  color: #3498db;
-  font-size: 40px;
-}
-
-.recommended-carousel .slick-dots li button:before {
-  font-size: 12px;
-}
-
-.carousel-item {
-  padding: 0 10px;
-}
-
-/* Make cards same height in carousel */
-.recommended-carousel .event-card {
-  height: 100%;
-  margin: 0 10px;
-}
+  .left-panel {
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .recommendation-section {
+    background-color: #f9f9f9;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .recommendation-slider {
+    margin-top: 12px;
+  }
+  
+  
+  
+  .right-panel {
+    flex: 1;
+  }
+  
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .recommendation-item {
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    margin: 0 10px;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .recommendation-item:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  }
+  
+  .rec-event-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ff5f6d;
+    margin-bottom: 8px;
+  }
+  
+  .rec-event-location,
+  .rec-event-date {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  
+  .rec-event-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+  }
+  
+  .stars {
+    color: #ffc107;
+    font-size: 1.1rem;
+  }
+  
+  .rating-value {
+    font-weight: 600;
+    color: #390639;
+  }
+  
+  .view-rec-btn {
+    background-color: #6a82fb;
+    color: #fff;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: auto;
+    transition: background-color 0.2s ease;
+  }
+  
+  .view-rec-btn:hover {
+    background-color: #5b6dfb;
+  }
+  .fun-card-wrapper {
+    background: #fefefe;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    margin-bottom: 20px;
+  }
+  
+  .recommendation-heading {
+    font-size: 1.5rem;
+    color: #444;
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+  
