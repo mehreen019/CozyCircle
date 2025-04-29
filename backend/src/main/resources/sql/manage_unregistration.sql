@@ -1,5 +1,8 @@
 DELIMITER //
 
+DROP PROCEDURE HandleUnregistration;
+//
+
 CREATE PROCEDURE HandleUnregistration(IN p_eventId BIGINT, IN p_email VARCHAR(255))
 BEGIN
     DECLARE user_found INT;
@@ -28,40 +31,45 @@ BEGIN
 END;
 //
 
-CREATE PROCEDURE PromoteFromWaitlist(IN p_eventId BIGINT)
+DROP PROCEDURE PromoteFromWaitlist//
+
+
+-- Create a new procedure that returns the promoted user's details
+CREATE PROCEDURE GetAndRemoveFirstWaitlistEntry(
+    IN p_eventId BIGINT,
+    OUT p_promotedName VARCHAR(255),
+    OUT p_promotedEmail VARCHAR(255)
+)
 BEGIN
     DECLARE first_waitlist_id BIGINT DEFAULT NULL;
-    DECLARE first_waitlist_name VARCHAR(255);
-    DECLARE first_waitlist_email VARCHAR(255);
+    DECLARE promoted_pos INT;
 
-    -- Try to get the first person on the waitlist
-    SELECT id, name, email
-    INTO first_waitlist_id, first_waitlist_name, first_waitlist_email
-    FROM eventmanage.waitlist
+    -- Find the first person on the waitlist
+    SELECT id, name, email, position
+    INTO first_waitlist_id, p_promotedName, p_promotedEmail, promoted_pos
+    FROM eventmanage.wait_list
     WHERE eventid = p_eventId
     ORDER BY position ASC
     LIMIT 1;
 
     IF first_waitlist_id IS NOT NULL THEN
-        -- Add to attendees
-        INSERT INTO eventmanage.attendee (eventid, name, email)
-        VALUES (p_eventId, first_waitlist_name, first_waitlist_email);
-
         -- Remove from waitlist
-        DELETE FROM eventmanage.waitlist
+        DELETE FROM eventmanage.wait_list
         WHERE id = first_waitlist_id;
 
-        -- Update waitlist positions
-        UPDATE eventmanage.waitlist
+        -- Decrement positions for those remaining on the waitlist *after* the deleted one
+        -- Use the position we just retrieved before deleting
+        UPDATE eventmanage.wait_list
         SET position = position - 1
-        WHERE eventid = p_eventId AND position > 1;
+        WHERE eventid = p_eventId AND position > promoted_pos;
 
-        -- Decrease capacity (attendee added)
-        UPDATE eventmanage.event
-        SET capacity = capacity - 1
-        WHERE id = p_eventId;
+        -- Note: We are NOT inserting into the attendee table here.
+        -- The caller (Java code) will handle the insert using the returned values.
+    ELSE
+        -- If no one found, set output parameters to indicate this
+        SET p_promotedName = NULL;
+        SET p_promotedEmail = NULL;
     END IF;
-END;
-//
+END //
 
 DELIMITER ;

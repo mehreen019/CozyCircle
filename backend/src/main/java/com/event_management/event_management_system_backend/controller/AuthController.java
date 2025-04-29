@@ -344,38 +344,42 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
 
     // Update the unregister endpoint to handle waitlist promotion
     @DeleteMapping("/unregister")
-    public ResponseEntity<?> unregisterFromEvent(@RequestParam Long eventId, @RequestParam String email) {
+    public ResponseEntity<?> unregister(@RequestParam Long eventId, @RequestParam String email) {
         System.out.println("Attempting to unregister email: " + email + " from event ID: " + eventId);
 
         Optional<Attendee> attendeeOptional = attendeeRepository.findByEventidAndEmail(eventId, email);
 
-        if (attendeeOptional.isPresent()) {
-            // Delete the attendee
-            attendeeRepository.delete(attendeeOptional.get());
-
-            // Get the event to update capacity
-            Optional<Event> eventOptional = eventRepository.findById(eventId);
-            if (eventOptional.isPresent()) {
-                Event event = eventOptional.get();
-                event.setCapacity(event.getCapacity() + 1);
-                eventRepository.save(event);
-
-                // Try to promote someone from waitlist
-                boolean promoted = waitListService.promoteFromWaitlist(eventId);
-
-                if (promoted) {
-                    return ResponseEntity.ok("Successfully unregistered from event. Someone from the waitlist has been registered.");
-                } else {
-                    return ResponseEntity.ok("Successfully unregistered from event.");
-                }
-            }
-            return ResponseEntity.ok("Successfully unregistered from event.");
-        } else {
+        if (!attendeeOptional.isPresent()) {
             return ResponseEntity.badRequest().body("User was not registered to this event");
         }
+
+        // Delete the attendee
+        attendeeRepository.delete(attendeeOptional.get());
+
+        Optional<Event> eventOptional = eventRepository.findById(eventId);
+        if (!eventOptional.isPresent()) {
+            return ResponseEntity.badRequest().body("Event not found");
+        }
+
+        Event event = eventOptional.get();
+
+        System.out.println("ATTEMPTING TO UNREGISTER PLEASE: " + eventId);
+
+        // Try to promote someone from waitlist
+        boolean promoted = waitListService.promoteFromWaitlist(eventId);
+
+        if (!promoted) {
+            // If no one was promoted, increase the capacity manually
+            event.setCapacity(event.getCapacity() + 1);
+            eventRepository.save(event);
+            return ResponseEntity.ok("Successfully unregistered from event.");
+        }
+
+        return ResponseEntity.ok("Successfully unregistered from event. Someone from the waitlist has been registered.");
     }
 
-@PostMapping("/events/rate")
+
+    @PostMapping("/events/rate")
 public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) {
     System.out.println("Received rating update request for event ID: " + ratingRequest.getId() + " with rating: " + ratingRequest.getRating());
 

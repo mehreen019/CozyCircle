@@ -84,13 +84,26 @@ const ViewEvent = () => {
             <CustomizedInput type="date" name="date" label="Date" value={format(prevEvent.date, "yyyy-MM-dd")}/>
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+              
+              { prevEvent.username === auth.user.username ? (
+                <NavigationLink
+                  bg="#AE9D99"
+                  to={`/${prevEvent.id}/waitlist-view`}
+                  state={{ Event: prevEvent }}
+                  text="View Attendee and Waitlist"
+                  textColor="black"
+                />
+              )
+            : (
               <NavigationLink
-                bg="#AE9D99"
-                to={`/${prevEvent.id}/waitlist-view`}
-                state={{ Event: prevEvent }}
-                text="View Attendee and Waitlist"
-                textColor="black"
-              />
+                  bg="#AE9D99"
+                  to={`/${prevEvent.id}/waitlist-view`}
+                  state={{ Event: prevEvent }}
+                  text="Unregister"
+                  textColor="black" 
+                />
+              )}
+
               <NavigationLink
                 bg="#6D5147"
                 to="/dashboard"
@@ -98,12 +111,7 @@ const ViewEvent = () => {
                 textColor="black"
               />
             </Box>
-            <NavigationLink
-                bg="#6D5147"
-                to="/dashboard"
-                text="Back"
-                textColor="black"
-              />
+
           </Box>
         </form>
       </Box>

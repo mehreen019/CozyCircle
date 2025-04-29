@@ -1,15 +1,16 @@
 package com.event_management.event_management_system_backend.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Attendee {
+
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "attendee_seq")
+    @SequenceGenerator(name = "attendee_seq", sequenceName = "attendee_seq", allocationSize = 1)
+    @Column(name = "id", nullable = false, updatable = false)
     private Long id;
+
     @Column(name = "name", nullable = false)
     private String name;
     @Column(name = "email", nullable = false)

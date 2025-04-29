@@ -9,6 +9,7 @@ import com.event_management.event_management_system_backend.repositories.WaitLis
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.Date;
 import java.util.List;
@@ -66,6 +67,8 @@ public class WaitListService {
     public void removeFromWaitlist(Long eventId, String email) {
         Optional<WaitList> waitlistEntry = waitlistRepository.findByEventidAndEmail(eventId, email);
 
+        System.out.println(waitlistEntry.isPresent() + "WAITLIST REMOVE STATUS");
+
         if (waitlistEntry.isPresent()) {
             Integer position = waitlistEntry.get().getPosition();
             waitlistRepository.deleteByEventidAndEmail(eventId, email);
@@ -78,37 +81,43 @@ public class WaitListService {
     /**
      * Promote the first person from the waitlist to attendee
      */
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean promoteFromWaitlist(Long eventId) {
-        Optional<WaitList> firstWaitlisted = waitlistRepository.findFirstByEventidOrderByPositionAsc(eventId);
+        try {
+            // Find the first person on the waitlist
+            Optional<WaitList> firstWaitlisted = waitlistRepository.findFirstByEventidOrderByPositionAsc(eventId);
 
-        if (firstWaitlisted.isPresent()) {
+            if (!firstWaitlisted.isPresent()) {
+                return false; // No one to promote
+            }
+
             WaitList entry = firstWaitlisted.get();
 
-            // Check if there's capacity
-            Optional<Event> eventOpt = eventRepository.findById(eventId);
-            if (!eventOpt.isPresent()) {
-                return false;
-            }
+            // Create a new Attendee entity
+            Attendee attendee = new Attendee();
+            attendee.setEventid(eventId);
+            attendee.setName(entry.getName());
+            attendee.setEmail(entry.getEmail());
 
-            Event event = eventOpt.get();
-            long currentAttendees = attendeeRepository.findByEventid(eventId).size();
+            // Get the max ID and set manually
+            Long maxId = attendeeRepository.findMaxId();
+            attendee.setId(maxId + 1);
 
-            if (currentAttendees < event.getCapacity()) {
-                // Create a new attendee from the waitlist entry
-                Attendee attendee = new Attendee();
-                attendee.setEventid(eventId);
-                attendee.setName(entry.getName());
-                attendee.setEmail(entry.getEmail());
-                attendeeRepository.save(attendee);
+            // Save the attendee
+            attendeeRepository.save(attendee);
 
-                // Remove from waitlist
-                removeFromWaitlist(eventId, entry.getEmail());
+            // Remove from waitlist
+            removeFromWaitlist(eventId, entry.getEmail());
 
-                return true;
-            }
+            return true;
+        } catch (Exception e) {
+            // Log the error
+            System.err.println("Error during waitlist promotion: " + e.getMessage());
+            e.printStackTrace();
+            // Re-throw to ensure transaction is rolled back
+            throw new RuntimeException("Failed to promote user from waitlist", e);
         }
-
-        return false;
     }
+
+
 }

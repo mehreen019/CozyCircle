@@ -11,7 +11,7 @@ const WaitlistView = () => {
   const [attendees, setAttendees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [prevEvent, setPrevEvent] = useState({});
-  const [showWaitlist, setShowWaitlist] = useState(true); // toggle state
+  const [showWaitlist, setShowWaitlist] = useState(false); // toggle state
 
   const auth = useAuth();
   const navigate = useNavigate();
