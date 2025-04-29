@@ -19,6 +19,7 @@ import ExploreEvents from './components/ExploreEvents'
 import TotalRatingsPage from './components/dummy'
 import EventRankings from './components/EventRankings'
 import EventAnalytics from './components/EventAnalytics'
+import EventCategoryCount from './components/EventCategoryCount'
 
 function App() {
 
@@ -42,7 +43,9 @@ function App() {
         <Route path="/viewEvent" element={<ViewEvent/>} />
         <Route path="/ExploreEvent" element={<ExploreEvents/>} />
         <Route path="/count/:eventId" element={<TotalRatingsPage/>} />
-        
+        <Route path= "/events/category-counts" element={<EventCategoryCount/>} />
+       
+
         {/* New routes for event rankings and analytics */}
         <Route path="/events/rankings" element={<EventRankings/>} />
         <Route path="/events/analytics" element={<EventAnalytics/>} />

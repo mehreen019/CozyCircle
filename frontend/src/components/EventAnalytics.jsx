@@ -82,6 +82,14 @@ const EventAnalytics = () => {
               textColor="black"
             />
           </Box>
+          <Box sx={{ mb: 4 }}>
+            <NavigationLink
+           bg="#C2B9B0"  // Slightly different shade for variety
+          to="/events/category-counts"
+           text="View Category Counts"
+           textColor="black"
+          />
+</Box>
         </Grid>
 
         {/* Summary Stats */}
