@@ -17,6 +17,9 @@ public class Attendee {
 
     @Column(name = "eventid", nullable = false)
     private Long eventid;
+    
+    @Column(name = "membership")
+    private String membership;
 
     public Attendee() {
     }
@@ -26,6 +29,14 @@ public class Attendee {
         this.name = name;
         this.email = email;
         this.eventid = eventid;
+    }
+
+    public Attendee(Long id, String name, String email, Long eventid, String membership) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.eventid = eventid;
+        this.membership = membership;
     }
 
     public Long getId() {
@@ -58,5 +69,13 @@ public class Attendee {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+    
+    public String getMembership() {
+        return membership;
+    }
+    
+    public void setMembership(String membership) {
+        this.membership = membership;
     }
 }
