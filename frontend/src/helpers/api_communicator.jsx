@@ -263,6 +263,78 @@ export const getUserRatingForEvent = async (eventId, userId) => {
   }
 };
 
+// Get user score by email
+export const getUserScore = async (email) => {
+  console.log("Fetching user score for email:", email);
+  try {
+    const res = await request("GET", `/user/score?email=${encodeURIComponent(email)}`, {});
+    if (res.status === 200) {
+      console.log("Successfully fetched user score:", res.data);
+      return res.data;
+    } else {
+      console.error("Error fetching user score. Status:", res.status);
+      throw new Error(`Unable to get user score: ${res.status}`);
+    }
+  } catch (error) {
+    console.error("Exception while fetching user score:", error);
+    throw new Error(error.message || "Unable to get user score");
+  }
+};
+
+// Get user memberships by email
+export const getUserMemberships = async (email) => {
+  console.log("Fetching user memberships for email:", email);
+  try {
+    const res = await request("GET", `/user/memberships?email=${encodeURIComponent(email)}`, {});
+    if (res.status === 200) {
+      console.log("Successfully fetched user memberships:", res.data);
+      return res.data;
+    } else {
+      console.error("Error fetching user memberships. Status:", res.status);
+      throw new Error(`Unable to get user memberships: ${res.status}`);
+    }
+  } catch (error) {
+    console.error("Exception while fetching user memberships:", error);
+    throw new Error(error.message || "Unable to get user memberships");
+  }
+};
+
+// Get user stats by email
+export const getUserStats = async (email) => {
+  console.log("Fetching user stats for email:", email);
+  try {
+    const res = await request("GET", `/user/stats?email=${encodeURIComponent(email)}`, {});
+    if (res.status === 200) {
+      console.log("Successfully fetched user stats:", res.data);
+      return res.data;
+    } else {
+      console.error("Error fetching user stats. Status:", res.status);
+      throw new Error(`Unable to get user stats: ${res.status}`);
+    }
+  } catch (error) {
+    console.error("Exception while fetching user stats:", error);
+    throw new Error(error.message || "Unable to get user stats");
+  }
+};
+
+// Get user leaderboard
+export const getUserLeaderboard = async () => {
+  console.log("Fetching user leaderboard");
+  try {
+    const res = await request("GET", "/users/leaderboard", {});
+    if (res.status === 200) {
+      console.log("Successfully fetched user leaderboard:", res.data);
+      return res.data;
+    } else {
+      console.error("Error fetching user leaderboard. Status:", res.status);
+      throw new Error(`Unable to get user leaderboard: ${res.status}`);
+    }
+  } catch (error) {
+    console.error("Exception while fetching user leaderboard:", error);
+    throw new Error(error.message || "Unable to get user leaderboard");
+  }
+};
+
 
 
 

@@ -19,4 +19,8 @@ public interface EventRatingRepository extends JpaRepository<EventRating, Long> 
     // Custom query to count the number of ratings for a specific event
     @Query("SELECT COUNT(e) FROM EventRating e WHERE e.event.id = :eventId")
     long countRatingsByEventId(@Param("eventId") Long eventId);
+    
+    // Count ratings provided by a specific user
+    @Query("SELECT COUNT(e) FROM EventRating e WHERE e.user.id = :userId")
+    long countByUserId(@Param("userId") Long userId);
 }
