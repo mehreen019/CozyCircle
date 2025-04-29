@@ -1,9 +1,8 @@
-import React, { useState, useEffect }  from 'react'
-import toast from 'react-hot-toast';
+import { useState, useEffect }  from 'react'
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CustomizedInput from './shared/CustomizedInput';
-import { Box, Typography, Button } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import './Popup.css'
 import { getAttendees } from '../helpers/api_communicator';
 import NavigationLink from './shared/NavigationLink';

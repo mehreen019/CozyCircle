@@ -1,9 +1,9 @@
-import React, { useState, useEffect }  from 'react'
+import { useState, useEffect }  from 'react'
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CustomizedInput from './shared/CustomizedInput';
-import { Box, Typography, Button } from '@mui/material'
+import { Box, Typography, Button, FormControl, InputLabel, Select, MenuItem  } from '@mui/material'
 import './Popup.css'
 import { updateEvent } from '../helpers/api_communicator';
 import NavigationLink from './shared/NavigationLink';
@@ -14,6 +14,7 @@ const EditEvent = () => {
   const auth = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [category, setCategory] = useState('');
 
   console.log(location)
 
@@ -24,6 +25,10 @@ const EditEvent = () => {
   }, [auth, navigate]);
 
   const [prevEvent, setPrevEvent] = useState(location?.state.Event);
+
+  const handleCategoryChange = (event) => {
+    setCategory(event.target.value);
+  };
 
   const onInputChange = (e) => {
     setPrevEvent({ ...prevEvent, [e.target.name]: e.target.value });
@@ -45,7 +50,7 @@ const EditEvent = () => {
 
 
     try {
-      const response = await updateEvent(`/update/${prevEvent.id}` ,name, username, description, place, city, country, date);
+      const response = await updateEvent(`/update/${prevEvent.id}` ,name, username, description, place, city, country, date, category);
       console.log(response)
 
       toast.loading("Event Updated Successfuly");
@@ -66,6 +71,8 @@ const EditEvent = () => {
     //props.setTrigger(false)
     console.log(username + " and " + name);
   }
+
+  const categories = ['Concert', 'Conference', 'Festival', 'Sports', 'Workshop', 'Music', 'Tech', 'Other'];
 
   return (
     (
@@ -101,6 +108,22 @@ const EditEvent = () => {
             <CustomizedInput type="city" name="city" label="City" value={prevEvent.city} onChange={(e) => onInputChange(e)}/>
             <CustomizedInput type="country" name="country" label="Country" value={prevEvent.country} onChange={(e) => onInputChange(e)}/>
             <CustomizedInput type="date" name="date" label="Date" value={format(prevEvent.date, "yyyy-MM-dd")} onChange={(e) => onInputChange(e)}/>
+
+            <FormControl fullWidth sx={{ my: 1 }}>
+              <InputLabel id="category-select-label">Category</InputLabel>
+              <Select
+                labelId="category-select-label"
+                id="category-select"
+                value={category}
+                label="Category"
+                onChange={handleCategoryChange}
+                sx={{ width: '400px', mb: 1 }}
+              >
+                {categories.map((cat) => (
+                  <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           
             <Button
               type="submit"

@@ -1,17 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAllEvents, addAttendee } from '../helpers/api_communicator';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+
+import { getAllEvents, addAttendee, filterEvents, getRegisteredEvents, unregisterUser } from '../helpers/api_communicator';
 import { format } from 'date-fns';
-import { TextField, MenuItem, Grid, Card, CardContent, Typography, Button, Select, FormControl, InputLabel } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import FilterPanel from './FilterPanel';
+import '../styles/ExploreEvents.css';
 
 const ExploreEvents = () => {
   const [events, setEvents] = useState([]);
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('All');
+  const [loading, setLoading] = useState(true);
+  const [reset, setReset] = useState(false);
+  const [registeredEventIds, setRegisteredEventIds] = useState([]);
+  const [filters, setFilters] = useState({
+    name: '',
+    city: '',
+    country: '',
+    minRating: 0,
+    maxRating: 5,
+    startDate: null,
+    endDate: null,
+    minCapacity: null, 
+    maxCapacity: null,
+    sortBy: 'rating',
+    category: 'All'
+  });
   const navigate = useNavigate();
   const auth = useAuth();
 
@@ -19,22 +34,118 @@ const ExploreEvents = () => {
     if (!auth?.user) {
       navigate('/login');
     } else {
-      loadEvents();
-    }
-  }, [auth, navigate]);
+      // Initial load
+      fetchEvents();
+      setReset(false); // Reset the reset state after fetching events
 
-  const loadEvents = async () => {
+      if(registeredEventIds.length === 0) {
+        // Fetch registered events if not already fetched
+        fetchRegisteredEvents();
+      }
+    }
+  }, [auth, navigate, reset, registeredEventIds]);
+
+  // Function to fetch events based on the applied filters
+  const fetchEvents = async () => {
+    setLoading(true);
     try {
-      const response = await getAllEvents();
-      const events = response.map(event => ({
-        ...event,
-        date: new Date(event.date),
-      }));
-      setEvents(events);
+      // If a search term is provided, use the search endpoint
+      /*if (filters.searchTerm && filters.searchTerm.trim() !== '') {
+        const response = await searchEvents(filters.searchTerm);
+        setEvents(formatEvents(response));
+      } else {*/
+        // Otherwise use the filter endpoint with the current filter state 
+        const filterParams = prepareFilterParams();
+
+        console.log("Filtered parameters:", filterParams);
+        const response = await filterEvents(filterParams);
+        console.log("Filtered events:", response);
+        setEvents(formatEvents(response));
+      //}
     } catch (error) {
-      console.error('Error loading events:', error);
+      console.error('Error fetching events:', error);
+      // Fallback to getAllEvents if the filter/search API fails
+      try {
+        const allEvents = await getAllEvents();
+        setEvents(formatEvents(allEvents));
+      } catch (fallbackError) {
+        console.error('Fallback error:', fallbackError);
+        toast.error('Failed to load events. Please try again later.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Format events data
+  const formatEvents = (eventsData) => {
+    return eventsData?.map(event => ({
+      ...event,
+      date: new Date(event.date)
+    }));
+  };
+
+  // Prepare filter parameters for the API
+  const prepareFilterParams = () => {
+    return {
+      name: filters.name,
+      category: filters.category === 'All' ? null : filters.category,
+      city: filters.city || null,
+      country: filters.country || null,
+      minRating: filters.minRating,
+      maxRating: filters.maxRating,
+      startDate: filters.startDate ? filters.startDate.toISOString().split('T')[0] : null,
+      endDate: filters.endDate ? filters.endDate.toISOString().split('T')[0] : null,
+      minCapacity: filters.minCapacity,
+      maxCapacity: filters.maxCapacity,
+      sortBy: filters.sortBy
+    };
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (newFilters) => {
+    setFilters({ ...filters, ...newFilters });
+  };
+
+  // Apply filters when filter button is clicked
+  const handleApplyFilters = () => {
+    fetchEvents();
+  };
+
+  // Reset filters to default
+  const handleResetFilters = () => {
+    const defaultFilters = {
+      name: '',
+      city: '',
+      country: '',
+      minRating: 0,
+      maxRating: 5,
+      startDate: null,
+      endDate: null,
+      minCapacity: null,
+      maxCapacity: null,
+      sortBy: 'rating',
+      category: 'All'
+    };
+  
+    setFilters(defaultFilters);
+    setReset(!reset); // Trigger a re-render to reset filters
+
+    console.log("Filters reset to default values.", filters.name);
+  };
+
+  const fetchRegisteredEvents = async () => {
+    try {
+      const response = await getRegisteredEvents(auth?.user.email);
+      const registeredIds = response.map(event => event.id); // Assuming API returns array of event objects
+      setRegisteredEventIds(registeredIds);
+      console.log("Registered event IDs:", registeredIds);
+    } catch (error) {
+      console.error('Error fetching registered events:', error);
+      toast.error('Failed to load registered events.');
+    }
+  };
+  
 
   const handleRegisterClick = async (event) => {
     if (!auth?.user) {
@@ -52,74 +163,136 @@ const ExploreEvents = () => {
       console.log(response);
 
       toast.success("Registered Successfully!", { autoClose: 3000 });
+
+      await fetchRegisteredEvents();
     } catch (error) {
       console.error(error);
       toast.error("Failed to register. Try again.");
     }
   };
 
+  const handleUnregisterClick = async (event) => {
+    if (!auth?.user) {
+      toast.error("You must be logged in to unregister.");
+      return;
+    }
+  
+    try {
+      toast.info("Unregistering...", { autoClose: 2000 });
+  
+      const response = await unregisterUser(event.id, auth.user.email);
+
+      console.log(response);
+  
+      if (response.status === 200) {
+        toast.success("Unregistered Successfully!", { autoClose: 3000 });
+        await fetchRegisteredEvents(); // Refresh the registered event IDs
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to unregister. Try again.");
+    }
+  };
+  
+  
+
+  // Generate star rating display
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(<span key={i} className="star full">★</span>);
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(<span key={i} className="star half">★</span>);
+      } else {
+        stars.push(<span key={i} className="star empty">☆</span>);
+      }
+    }
+    
+    return stars;
+  };
+
   return (
-    <div style={{ backgroundColor: '#f8f9fa', minHeight: '100vh', padding: '20px' }}>
-      <h1 style={{ color: '#333', textAlign: 'center', marginBottom: '30px', fontSize: '2rem', fontWeight: 'bold' }}>
-        Explore Events
-      </h1>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '30px' }}>
-        <TextField
-          label="Search Events"
-          variant="outlined"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ width: '350px', backgroundColor: 'white' }}
+    <div className="explore-events-container">
+      <h1>Explore Events</h1>
+      
+      <div className="explore-content">
+        <FilterPanel 
+          filters={filters} 
+          onFilterChange={handleFilterChange} 
+          onApplyFilters={handleApplyFilters}
+          onResetFilters={handleResetFilters}
         />
-        <FormControl variant="outlined" style={{ width: '300px', backgroundColor: 'white' }}>
-          <InputLabel>Category</InputLabel>
-          <Select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            label="Category"
-            style={{ fontSize: '16px', padding: '12px' }}
-          >
-            <MenuItem value="All">All</MenuItem>
-            <MenuItem value="Music">Music</MenuItem>
-            <MenuItem value="Tech">Tech</MenuItem>
-            <MenuItem value="Sports">Sports</MenuItem>
-          </Select>
-        </FormControl>
-      </div>
-      <Grid container spacing={4} justifyContent="center">
-        {events.map((event, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
-            <Card style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom style={{ fontWeight: 'bold', color: '#333' }}>
-                  {event.name}
-                </Typography>
-                <Typography variant="body1" style={{ color: '#555' }}>
+        
+        <div className="events-grid">
+          {loading ? (
+            <div className="loading">Loading events...</div>
+          ) : events?.length > 0 ? (
+            events?.map(event => (
+              <div className="event-card" key={event.id}>
+                <h3 className="event-name">{event.name}</h3>
+                <div className="event-location">
                   {event.city}, {event.country}
-                </Typography>
-                <Typography variant="body2" style={{ color: '#777' }}>
-                  {format(event.date, 'MMMM do, yyyy')}
-                </Typography>
-                <Typography variant="body2" style={{ color: '#f39c12', fontWeight: 'bold' }}>
-                  Rating: {event.rating}/5
-                </Typography>
-                <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between' }}>
-                  <Link className="btn mx-2 btn-secondary btn-outline-light" to={{ pathname: "/viewCommonEvent" }} state={{ Event: event }}>
+                </div>
+                <div className="event-date">
+                  {format(new Date(event.date), 'MMMM dd, yyyy')}
+                </div>
+                <div className="event-rating">
+                  <div className="stars">{renderStars(event.averageRating)}</div>
+                    <span className="rating-value">Rating: {event.averageRating.toFixed(1)}/5</span>
+                    {event?.totalRatings > 0 && (
+                      <span className="total-ratings">({event.totalRatings} ratings)</span>
+                    )}
+                </div>
+                {event.capacity && (
+                  <div className="event-capacity">
+                    <span className="availability">
+                      Capacity: {event?.capacity}
+                    </span>
+                  </div>
+                )}
+                <div className="event-actions">
+                  <Link 
+                    className="view-btn" 
+                    to={{ pathname: "/viewCommonEvent" }} 
+                    state={{ Event: event }}
+                  >
                     View
                   </Link>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => handleRegisterClick(event)}
-                  >
-                    Register
-                  </Button>
+
+                  { auth?.user && auth?.user.username === event.username ? (
+                    <button 
+                      className="unregister-btn"
+                      disabled
+                    >
+                      Created
+                    </button>
+                  ) : registeredEventIds.includes(event.id) ? (
+                    <button 
+                      className="unregister-btn"
+                      onClick={() => handleUnregisterClick(event)}
+                    >
+                      Unregister
+                    </button>
+                  ) : (
+                    <button 
+                      className="register-btn"
+                      onClick={() => handleRegisterClick(event)}
+                    >
+                      Register
+                    </button>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+              </div>
+            ))
+          ) : (
+            <div className="no-events">No events found matching your criteria.</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

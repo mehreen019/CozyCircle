@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react'
-import { useAuth} from '../context/AuthContext';
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@mui/material';
 import { getAllEvents } from '../helpers/api_communicator';
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import NavigationLink from './shared/NavigationLink';
 

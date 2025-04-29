@@ -19,11 +19,12 @@ public class EventDto {
     private String place;
     private String description;
     private Date date;
-    private double rating = 0;  // Renamed to 'rating' to match consistency
+    private double rating = 0;
     private Long userId;
     private int capacity;
     private int total_ratings = 0;
     private String category;
+    private String timeCategory;
 
     // Getter and Setter for 'id'
     public Long getId() {
@@ -33,13 +34,7 @@ public class EventDto {
     public void setId(Long id) {
         this.id = id;
     }
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
+  
 
     // Getter and Setter for 'username'
     public String getUsername() {
@@ -134,5 +129,21 @@ public class EventDto {
 
     public void setTotal_ratings(int total_ratings) {
         this.total_ratings = total_ratings;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getTimeCategory() {
+        return timeCategory;
+    }
+
+    public void setTimeCategory(String timeCategory) {
+        this.timeCategory = timeCategory;
     }
 }

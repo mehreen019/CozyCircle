@@ -24,6 +24,7 @@ public class EventRankingDto {
     private double averageRating;
     private int capacity;
     private int total_ratings;
+    private String Category;
     
     // Ranking and count properties
     private Integer attendeeCount;

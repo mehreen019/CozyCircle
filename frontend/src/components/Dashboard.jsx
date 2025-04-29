@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from 'react'
 import { useAuth} from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -9,12 +7,12 @@ import NavigationLink from './shared/NavigationLink';
 import { Link } from "react-router-dom";
 
 import { format } from "date-fns";
-import { PieChart, Pie, Tooltip, Cell, Legend, ResponsiveContainer } from 'recharts';
 
 const Dashboard = () => {
   const [events, setEvents] = useState([]);
   const [registeredEvents, setRegisteredEvents] = useState([]);
   const [activeTab, setActiveTab] = useState('created');
+  const [timeTab, setTimeTab] = useState('all');  // New state for time-based tabs
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
@@ -89,7 +87,21 @@ const Dashboard = () => {
     loadEvents();
   };
 
-  const renderEventsTable = (eventsToRender) => {
+  // Filter events based on time category
+  const filterEventsByTimeCategory = (eventsArray, category) => {
+    if (category === 'all') return eventsArray;
+    return eventsArray.filter(event => event.timeCategory === category);
+  };
+
+  // Get events to display based on active tab and time filter
+  const getEventsToDisplay = () => {
+    const baseEvents = activeTab === 'created' ? events : registeredEvents;
+    return filterEventsByTimeCategory(baseEvents, timeTab);
+  };
+
+  const renderEventsTable = () => {
+    const eventsToRender = getEventsToDisplay();
+    
     if (!eventsToRender || eventsToRender.length === 0) {
       return (
         <div className="container">
@@ -191,6 +203,7 @@ const Dashboard = () => {
         </div>
       )}
       
+      {/* Main tabs for Created/Registered Events */}
       <div className="tabs" style={{ marginBottom: '20px' }}>
         <button 
           onClick={() => setActiveTab('created')}
@@ -219,12 +232,64 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {activeTab === 'created' ? renderEventsTable(events) : renderEventsTable(registeredEvents)}
+      {/* Time-based tabs */}
+      <div className="time-tabs" style={{ marginBottom: '20px' }}>
+        <button 
+          onClick={() => setTimeTab('all')}
+          style={{ 
+            padding: '8px 16px', 
+            marginRight: '10px', 
+            backgroundColor: timeTab === 'all' ? '#AE9D99' : '#eee',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          All Events
+        </button>
+        <button 
+          onClick={() => setTimeTab('UPCOMING')}
+          style={{ 
+            padding: '8px 16px', 
+            marginRight: '10px',
+            backgroundColor: timeTab === 'upcoming' ? '#AE9D99' : '#eee',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Upcoming Events
+        </button>
+        <button 
+          onClick={() => setTimeTab('CURRENT')}
+          style={{ 
+            padding: '8px 16px', 
+            marginRight: '10px',
+            backgroundColor: timeTab === 'current' ? '#AE9D99' : '#eee',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Current Events
+        </button>
+        <button 
+          onClick={() => setTimeTab('PAST')}
+          style={{ 
+            padding: '8px 16px',
+            backgroundColor: timeTab === 'past' ? '#AE9D99' : '#eee',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Past Events
+        </button>
+      </div>
+
+      {renderEventsTable()}
     </div>
   )
 }
 
 export default Dashboard
-
-//onClick={()=> setAddButtonPopup(true)}  
-//<AddEvent trigger={addButtonPopup} setTrigger={setAddButtonPopup}></AddEvent>
