@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getAllEventRankings } from '../helpers/ranking_api';
@@ -10,11 +10,6 @@ import {
   Card,
   CardContent,
   Box,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  Button,
   CircularProgress,
 } from '@mui/material';
 import {
@@ -51,7 +46,7 @@ const EventAnalytics = () => {
   };
 
   if (loading) {
-    return <Box display="flex" justifyContent="center" mt={5}><CircularProgress /></Box>;
+    return <Box display="flex" justifyContent="center" mt={5}><CircularProgress sx={{ color: '#AE9D99' }} /></Box>;
   }
 
   if (error) {
@@ -70,9 +65,17 @@ const EventAnalytics = () => {
   const averageRating = rankings.reduce((sum, e) => sum + e.averageRating, 0) / totalEvents || 0;
   const fillingRate = (totalAttendees / totalCapacity) * 100 || 0;
 
+  // Theme-consistent colors
+  const chartColors = {
+    ratings: '#6D5147',      // Brown - primary
+    attendees: '#AE9D99',    // Beige - secondary
+    capacity: '#8D7B74',     // Medium brown
+    available: '#C2B9B0'     // Light beige
+  };
+
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom color="black">
         📊 Event Analytics Dashboard
       </Typography>
 
@@ -80,30 +83,34 @@ const EventAnalytics = () => {
         {/* Navigation */}
         <Grid item xs={12}>
           <Box display="flex" gap={2} flexWrap="wrap">
-            <NavigationLink to="/events/rankings" text="View Detailed Rankings" bg="#AE9D99" textColor="black" />
-            <NavigationLink to="/events/category-counts" text="View Category Counts" bg="#C2B9B0" textColor="black" />
+            <NavigationLink to="/events/rankings" text="View Detailed Rankings" bg="#6D5147" textColor="white" />
+            <NavigationLink to="/events/category-counts" text="View Category Counts" bg="#AE9D99" textColor="black" />
           </Box>
         </Grid>
 
         {/* Summary KPIs */}
         {[{
           title: "Total Events",
-          value: totalEvents
+          value: totalEvents,
+          bg: "#6D5147"
         }, {
           title: "Total Attendees",
-          value: totalAttendees
+          value: totalAttendees,
+          bg: "#AE9D99"
         }, {
           title: "Average Rating",
-          value: `${averageRating.toFixed(1)} ★`
+          value: `${averageRating.toFixed(1)} ★`,
+          bg: "#8D7B74"
         }, {
           title: "Filling Rate",
-          value: `${fillingRate.toFixed(1)}%`
+          value: `${fillingRate.toFixed(1)}%`,
+          bg: "#C2B9B0"
         }].map((stat, idx) => (
           <Grid item xs={12} sm={6} md={3} key={idx}>
-            <Card elevation={4}>
+            <Card elevation={4} sx={{ bgcolor: stat.bg, color: stat.bg === "#AE9D99" || stat.bg === "#C2B9B0" ? "black" : "white" }}>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>{stat.title}</Typography>
-                <Typography variant="h4">{stat.value}</Typography>
+                <Typography color="inherit" gutterBottom fontWeight="bold">{stat.title}</Typography>
+                <Typography variant="h4" color="inherit">{stat.value}</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -111,64 +118,64 @@ const EventAnalytics = () => {
 
         {/* Charts Section */}
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Typography variant="h6">Top Rated Events</Typography>
+          <Paper elevation={3} sx={{ p: 2, bgcolor: 'rgba(174, 157, 153, 0.1)', borderRadius: '8px' }}>
+            <Typography variant="h6" color="black" sx={{ mb: 2 }}>Top Rated Events</Typography>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={topRatedEvents}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="averageRating" stroke="#8884d8" strokeWidth={2} dot={{ r: 6 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="name" tick={{ fill: '#AE9D99' }} />
+                <YAxis tick={{ fill: '#AE9D99' }} />
+                <Tooltip contentStyle={{ backgroundColor: '#05101c', borderColor: '#6D5147' }} />
+                <Legend wrapperStyle={{ color: 'white' }} />
+                <Line type="monotone" dataKey="averageRating" name="Rating" stroke={chartColors.ratings} strokeWidth={2} dot={{ r: 6, fill: chartColors.ratings }} />
               </LineChart>
             </ResponsiveContainer>
           </Paper>
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Typography variant="h6">Most Popular Events (Attendees)</Typography>
+          <Paper elevation={3} sx={{ p: 2, bgcolor: 'rgba(174, 157, 153, 0.1)', borderRadius: '8px' }}>
+            <Typography variant="h6" color="black" sx={{ mb: 2 }}>Most Popular Events (Attendees)</Typography>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={mostPopularEvents}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="attendeeCount" stroke="#82ca9d" strokeWidth={2} dot={{ r: 6 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="name" tick={{ fill: '#AE9D99' }} />
+                <YAxis tick={{ fill: '#AE9D99' }} />
+                <Tooltip contentStyle={{ backgroundColor: '#05101c', borderColor: '#6D5147' }} />
+                <Legend wrapperStyle={{ color: 'white' }} />
+                <Line type="monotone" dataKey="attendeeCount" name="Attendees" stroke={chartColors.attendees} strokeWidth={2} dot={{ r: 6, fill: chartColors.attendees }} />
               </LineChart>
             </ResponsiveContainer>
           </Paper>
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Typography variant="h6">Largest Events (Capacity)</Typography>
+          <Paper elevation={3} sx={{ p: 2, bgcolor: 'rgba(174, 157, 153, 0.1)', borderRadius: '8px' }}>
+            <Typography variant="h6" color="black" sx={{ mb: 2 }}>Largest Events (Capacity)</Typography>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={largestEvents}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="capacity" stroke="#ffa726" strokeWidth={2} dot={{ r: 6 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="name" tick={{ fill: '#AE9D99' }} />
+                <YAxis tick={{ fill: '#AE9D99' }} />
+                <Tooltip contentStyle={{ backgroundColor: '#05101c', borderColor: '#6D5147' }} />
+                <Legend wrapperStyle={{ color: 'white' }} />
+                <Line type="monotone" dataKey="capacity" name="Capacity" stroke={chartColors.capacity} strokeWidth={2} dot={{ r: 6, fill: chartColors.capacity }} />
               </LineChart>
             </ResponsiveContainer>
           </Paper>
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Typography variant="h6">Most Available Seats</Typography>
+          <Paper elevation={3} sx={{ p: 2, bgcolor: 'rgba(174, 157, 153, 0.1)', borderRadius: '8px' }}>
+            <Typography variant="h6" color="black" sx={{ mb: 2 }}>Most Available Seats</Typography>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={mostAvailableEvents}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="availableCapacity" stroke="#ef5350" strokeWidth={2} dot={{ r: 6 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="name" tick={{ fill: '#AE9D99' }} />
+                <YAxis tick={{ fill: '#AE9D99' }} />
+                <Tooltip contentStyle={{ backgroundColor: '#05101c', borderColor: '#6D5147' }} />
+                <Legend wrapperStyle={{ color: 'white' }} />
+                <Line type="monotone" dataKey="availableCapacity" name="Available Seats" stroke={chartColors.available} strokeWidth={2} dot={{ r: 6, fill: chartColors.available }} />
               </LineChart>
             </ResponsiveContainer>
           </Paper>
