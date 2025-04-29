@@ -127,7 +127,7 @@
     margin-top: 15px;
   }
   
-  .view-btn, .register-btn {
+  .view-btn, .register-btn, .unregister-btn {
     padding: 8px 16px;
     border-radius: 4px;
     font-weight: 500;
@@ -136,6 +136,8 @@
     text-decoration: none;
     transition: background-color 0.2s;
   }
+
+
   
   .view-btn {
     background-color: #f0f0f0;
@@ -155,6 +157,16 @@
   
   .register-btn:hover {
     background-color: #5d4037;
+  }
+
+  .unregister-btn {
+    background-color: rgb(184, 181, 181);
+    color: #6d4c41;
+    border: none;
+  }
+
+  .unregister-btn:hover {
+    color: white;
   }
   
   @media (max-width: 768px) {

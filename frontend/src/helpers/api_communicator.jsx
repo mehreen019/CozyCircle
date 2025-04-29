@@ -47,6 +47,17 @@ export const addAttendee = async (eventid, name, email) => {
   return data;
 };
 
+export const unregisterUser = async (eventId, email) => {
+  console.log("reached api "+ email + " eventid: "+ eventId)
+  const res = await request("DELETE",`/unregister?eventId=${eventId}&email=${email}`, {});
+  if(res.status != 200)
+  {
+      throw new Error("Unable to unregister for event");
+  }
+
+  return res;
+};
+
 export const getAttendees = async (route) => {
   console.log("reached getattendees ")
   const res = await request("GET",route, {});

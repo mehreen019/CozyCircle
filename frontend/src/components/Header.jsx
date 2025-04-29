@@ -31,7 +31,7 @@ const Header = () => {
                     text="Logout"
                     onClick={auth.logout}
                   />
-                  {auth.inExplore ? (
+                  {/*auth.inExplore ? (
                     <NavigationLink
                       bg="#AE9D99"
                       textColor="black"
@@ -39,7 +39,7 @@ const Header = () => {
                       text="Dashboard"
                       onClick={auth.toggleExplore}
                     />
-                  ) : (
+                  ) : (*/}
                     <NavigationLink
                       bg="#AE9D99"
                       textColor="black"
@@ -47,7 +47,6 @@ const Header = () => {
                       text="Explore Events"
                       onClick={auth.toggleExplore}
                     />
-                  )}
                 </div>
               </>
             ) : (

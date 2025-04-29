@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Box, Button } from '@mui/material';
 
@@ -19,10 +18,6 @@ const Menu = () => {
             <div style={{ margin: '0 10px' }}></div>
             <Link to="/addEvent" style={{ textDecoration: 'none' }}>
                 <Button variant="contained" color="primary" sx={{ bgcolor: '#6D5147', '&:hover': { bgcolor: '#AE9D99' } }}>Add Event</Button>
-            </Link>
-            <div style={{ margin: '0 10px' }}></div>
-            <Link to="/ExploreEvent" style={{ textDecoration: 'none' }}>
-                <Button variant="contained" color="primary" sx={{ bgcolor: '#6D5147', '&:hover': { bgcolor: '#AE9D99' } }}>Explore Events</Button>
             </Link>
         </Box>
     );

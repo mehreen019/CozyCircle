@@ -199,6 +199,23 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
         return ResponseEntity.ok(savedAttendee);
     }
 
+    @DeleteMapping("/unregister")
+    public ResponseEntity<?> unregisterFromEvent(@RequestParam Long eventId, @RequestParam String email) {
+        System.out.println("Attempting to unregister email: " + email + " from event ID: " + eventId);
+
+        Optional<Attendee> attendeeOptional = attendeeRepository.findByEventidAndEmail(eventId, email);
+
+        if (attendeeOptional.isPresent()) {
+            attendeeRepository.delete(attendeeOptional.get());
+            System.out.println("Successfully unregistered");
+            return ResponseEntity.ok("Successfully unregistered from event");
+        } else {
+            System.out.println("Attendee not found");
+            return ResponseEntity.badRequest().body("User was not registered to this event");
+        }
+    }
+
+
     @GetMapping("/attendees/{id}")
     public ResponseEntity<List<Attendee>> getAllAttendees(@PathVariable Long id){
 
