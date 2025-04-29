@@ -85,17 +85,22 @@ DELIMITER ;
 -- Create trigger for when a user registers for an event
 DELIMITER //
 
+DROP TRIGGER score_after_attendee_insert;
+
+DELIMITER //
+
 CREATE TRIGGER score_after_attendee_insert
-AFTER INSERT ON attendee
-FOR EACH ROW
+    AFTER INSERT ON attendee
+    FOR EACH ROW
 BEGIN
     DECLARE user_id INT;
-    
-    -- Find the user ID based on email
-    SELECT id INTO user_id 
-    FROM admin 
-    WHERE email = NEW.email;
-    
+
+    -- Find *an* admin user ID based on email, taking only the first match
+    SELECT id INTO user_id
+    FROM admin
+    WHERE email = NEW.email
+    LIMIT 1; -- Added LIMIT 1 here
+
     IF user_id IS NOT NULL THEN
         -- Call procedure to update score
         CALL calculate_user_score(user_id);
@@ -110,23 +115,23 @@ DELIMITER ;
 
 DELIMITER //
 
+DROP TRIGGER score_after_attendee_delete;
+
 CREATE TRIGGER score_after_attendee_delete
-AFTER DELETE ON attendee
-FOR EACH ROW
+    AFTER DELETE ON attendee
+    FOR EACH ROW
 BEGIN
     DECLARE user_id INT;
-    
-    -- Find the user ID based on email
-    SELECT id INTO user_id 
-    FROM admin 
-    WHERE email = OLD.email;
-    
+
+    -- Find *an* admin user ID based on email, taking only the first match if duplicates exist
+    SELECT id INTO user_id
+    FROM admin
+    WHERE email = OLD.email
+    LIMIT 1; -- Added LIMIT 1 here
+
     IF user_id IS NOT NULL THEN
         -- Call existing procedure to recalculate score
-        -- This will automatically decrease the score since there's one less attended event
         CALL calculate_user_score(user_id);
-        
-        
     END IF;
 END //
 

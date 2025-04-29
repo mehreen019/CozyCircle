@@ -35,16 +35,26 @@ export const searchEvents = async (searchTerm) => {
   }
 };
 
-export const addAttendee = async (eventid, name, email) => {
-  console.log("reached api "+ name + " eventid: "+ eventid)
-  const res = await request("POST","/addattendee", {eventid, name, email});
-  if(res.status != 200)
-  {
-      throw new Error("Unable to register for event");
-  }
 
-  const data = await res.data;
-  return data;
+export const addAttendee = async (eventId, name, email) => {
+  try {
+    const res = await request(
+      `POST`,
+      `/addattendee`,
+      {
+        eventid: eventId,
+        name: name,
+        email: email
+      }
+    );
+    return res.data;
+  } catch (error) {
+    if (error.response && error.response.data && error.response.data.status === "waitlisted") {
+      return error.response.data;
+    }
+    console.log(error);
+    throw error;
+  }
 };
 
 export const unregisterUser = async (eventId, email) => {
@@ -83,6 +93,7 @@ export const addEvent = async (name, username, description, place, city, country
 };
 
 
+
 export const updateEvent = async (route, name, username, description, place, city, country, date, category) => {
   console.log("reached api "+ username + " date: "+ date)
   const res = await request("PUT",route, {name, username, description, place, city, country, date, category});
@@ -95,11 +106,24 @@ export const updateEvent = async (route, name, username, description, place, cit
   return data;
 };
 
+export const getEvent = async (id) => {
+  try {
+    const res = await request(`GET`, `/getevent/${id}`, {});
+    if (res.status !== 200) {
+      throw new Error(`Failed to get event: ${res.status}`);
+    }
+    return res.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
 
 export const getEvents = async () => {
   console.log("Fetching created events");
   try {
-    const res = await request("GET", "/getevent", {});
+    const res = await request("GET", "/getevents", {});
     if (res.status === 200) {
       console.log("Successfully fetched created events:", res.data);
       console.log("Events:", res.data);
@@ -336,6 +360,18 @@ export const getUserLeaderboard = async () => {
   }
 };
 
+export const getWaitlist = async (id) => {
+  try {
+    const res = await request(`GET`, `/waitlist/${id}`, {});
+    if (res.status !== 200) {
+      throw new Error(`Failed to get waitlist: ${res.status}`);
+    }
+    return res.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
 
 
 

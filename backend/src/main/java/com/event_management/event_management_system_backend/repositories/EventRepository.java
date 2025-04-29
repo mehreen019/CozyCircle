@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByUsername(String username);
-     Optional<Event> findById(Long Id);
+    Optional<Event> findById(Long Id);
 
     List<Event> findByUsernameAndTimeCategory(String username, String timeCategory);
 
