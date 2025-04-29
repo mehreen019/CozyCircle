@@ -117,6 +117,34 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
         return ResponseEntity.ok(eventDtoList);
     }
 
+    @GetMapping("/events/time-category/{timeCategory}")
+    public ResponseEntity<List<EventDto>> getEventsByTimeCategory(@PathVariable String timeCategory) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        AdminDto adminDto = (AdminDto) authentication.getPrincipal();
+        String username = adminDto.getUsername();
+
+        System.out.println("Fetching " + timeCategory + " events for user: " + username);
+
+        List<Event> events = eventRepository.findByUsernameAndTimeCategory(username, timeCategory);
+        List<EventDto> eventDtoList = eventMapper.listEventToDto(events);
+
+        return ResponseEntity.ok(eventDtoList);
+    }
+
+    @GetMapping("/registered-events/time-category/{timeCategory}")
+    public ResponseEntity<List<EventDto>> getRegisteredEventsByTimeCategory(
+            @RequestParam String email,
+            @PathVariable String timeCategory) {
+        System.out.println("Getting " + timeCategory + " registered events for email: " + email);
+
+        List<Event> events = eventRepository.findRegisteredEventsByEmailAndTimeCategory(email, timeCategory);
+        System.out.println("Found " + events.size() + " " + timeCategory + " events for this email");
+
+        List<EventDto> eventDtos = eventMapper.listEventToDto(events);
+
+        return ResponseEntity.ok(eventDtos);
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deleteEvent(@PathVariable Long id){
         if(eventRepository.existsById(id)){

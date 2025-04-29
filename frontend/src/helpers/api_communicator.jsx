@@ -103,6 +103,23 @@ export const getEvents = async () => {
   }
 };
 
+export const getEventsByTimeCategory = async (timeCategory) => {
+  console.log(`Fetching ${timeCategory} events`);
+  try {
+    const res = await request("GET", `/events/time-category/${timeCategory}`, {});
+    if (res.status === 200) {
+      console.log(`Successfully fetched ${timeCategory} events:`, res.data);
+      return res.data;
+    } else {
+      console.error(`Error fetching ${timeCategory} events. Status:`, res.status);
+      throw new Error(`Unable to get ${timeCategory} events: ${res.status}`);
+    }
+  } catch (error) {
+    console.error(`Exception while fetching ${timeCategory} events:`, error);
+    throw new Error(error.message || `Unable to get ${timeCategory} events`);
+  }
+};
+
 export const getAllEvents = async () => {
   console.log("reached getevents ")
   const res = await request("GET","/getallevents", {});
@@ -193,6 +210,28 @@ export const getRegisteredEvents = async (email) => {
   } catch (error) {
     console.error("Exception while fetching registered events:", error);
     throw new Error(error.message || "Unable to get registered events");
+  }
+};
+
+export const getRegisteredEventsByTimeCategory = async (email, timeCategory) => {
+  console.log(`Fetching registered ${timeCategory} events for ${email}`);
+  try {
+    if (!email) {
+      console.error("Email is empty or undefined");
+      throw new Error("Email is required to fetch registered events");
+    }
+    
+    const res = await request("GET", `/registered-events/time-category/${timeCategory}?email=${email}`, {});
+    if (res.status === 200) {
+      console.log(`Successfully fetched registered ${timeCategory} events:`, res.data);
+      return res.data;
+    } else {
+      console.error(`Error fetching registered ${timeCategory} events. Status:`, res.status);
+      throw new Error(`Unable to get registered ${timeCategory} events: ${res.status}`);
+    }
+  } catch (error) {
+    console.error(`Exception while fetching registered ${timeCategory} events:`, error);
+    throw new Error(error.message || `Unable to get registered ${timeCategory} events`);
   }
 };
 

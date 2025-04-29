@@ -16,7 +16,19 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByUsername(String username);
      Optional<Event> findById(Long Id);
 
+    List<Event> findByUsernameAndTimeCategory(String username, String timeCategory);
 
+    // Method to get events by time category and any user
+    List<Event> findByTimeCategory(String timeCategory);
+
+    // Find registered events by email and time category
+    @Query(value = "SELECT e.* FROM event e " +
+            "JOIN attendee a ON e.id = a.eventid " +
+            "WHERE a.email = :email " +
+            "AND e.time_category = :timeCategory",
+            nativeQuery = true)
+    List<Event> findRegisteredEventsByEmailAndTimeCategory(@Param("email") String email,
+                                                           @Param("timeCategory") String timeCategory);
     
     // SQL query using RANK() to get events ranked by average rating
     @Query(value = "SELECT e.*, " +
