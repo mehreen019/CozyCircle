@@ -27,8 +27,9 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers(HttpMethod.POST, "/login", "/register", "/addattendee","/events/rate","/addevent", "/count", "/events/ranked/ratings", "/events/ranked/attendees", "/events/ranked/capacity", "/events/ranked/available-capacity", "/events/ranked/all").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/getallevents", "/count", "/events/ranked/ratings", "/events/ranked/attendees", "/events/ranked/capacity", "/events/ranked/available-capacity", "/events/ranked/all").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/login", "/register", "/addattendee","/events/rate","/addevent", "/count", "/events/ranked/ratings", "/events/ranked/attendees", "/events/ranked/capacity", "/events/ranked/available-capacity", "/events/ranked/all", "/events/filter").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/getallevents", "/count", "/events/ranked/ratings", "/events/ranked/attendees", "/events/ranked/capacity", "/events/ranked/available-capacity", "/events/ranked/all", "events/search?*").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/unregister").permitAll()
                         .anyRequest().authenticated())
         ;
 

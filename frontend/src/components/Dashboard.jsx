@@ -5,13 +5,14 @@ import { getAuthToken, request } from '../helpers/axios_helper';
 import { getEvents, getRegisteredEvents } from '../helpers/api_communicator';
 import NavigationLink from './shared/NavigationLink';
 import { Link } from "react-router-dom";
-import { format } from "date-fns";
 
+import { format } from "date-fns";
 
 const Dashboard = () => {
   const [events, setEvents] = useState([]);
   const [registeredEvents, setRegisteredEvents] = useState([]);
   const [activeTab, setActiveTab] = useState('created');
+  const [timeTab, setTimeTab] = useState('all');  // New state for time-based tabs
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
@@ -24,14 +25,13 @@ const Dashboard = () => {
     console.log("Dashboard useEffect - auth user:", auth.user);
     if (!auth?.user) {
       return navigate("*");
-    }
-    else{
+    } else {
       loadEvents();
       loadRegisteredEvents();
     }
   }, [auth, navigate]);
 
-  const loadEvents = async () =>{
+  const loadEvents = async () => {
     try {
       console.log("Loading created events...");
       const response = await getEvents();
@@ -80,14 +80,28 @@ const Dashboard = () => {
       console.error('Error loading registered events:', error);
       setError("Failed to load registered events: " + error.message);
     }
-  }
+  };
 
-  const onDelete = async (id) =>{
-    await request("DELETE", `/delete/${id}`, {})
+  const onDelete = async (id) => {
+    await request("DELETE", `/delete/${id}`, {});
     loadEvents();
-  }
+  };
 
-  const renderEventsTable = (eventsToRender) => {
+  // Filter events based on time category
+  const filterEventsByTimeCategory = (eventsArray, category) => {
+    if (category === 'all') return eventsArray;
+    return eventsArray.filter(event => event.timeCategory === category);
+  };
+
+  // Get events to display based on active tab and time filter
+  const getEventsToDisplay = () => {
+    const baseEvents = activeTab === 'created' ? events : registeredEvents;
+    return filterEventsByTimeCategory(baseEvents, timeTab);
+  };
+
+  const renderEventsTable = () => {
+    const eventsToRender = getEventsToDisplay();
+    
     if (!eventsToRender || eventsToRender.length === 0) {
       return (
         <div className="container">
@@ -189,6 +203,7 @@ const Dashboard = () => {
         </div>
       )}
       
+      {/* Main tabs for Created/Registered Events */}
       <div className="tabs" style={{ marginBottom: '20px' }}>
         <button 
           onClick={() => setActiveTab('created')}
@@ -217,12 +232,64 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {activeTab === 'created' ? renderEventsTable(events) : renderEventsTable(registeredEvents)}
+      {/* Time-based tabs */}
+      <div className="time-tabs" style={{ marginBottom: '20px' }}>
+        <button 
+          onClick={() => setTimeTab('all')}
+          style={{ 
+            padding: '8px 16px', 
+            marginRight: '10px', 
+            backgroundColor: timeTab === 'all' ? '#AE9D99' : '#eee',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          All Events
+        </button>
+        <button 
+          onClick={() => setTimeTab('UPCOMING')}
+          style={{ 
+            padding: '8px 16px', 
+            marginRight: '10px',
+            backgroundColor: timeTab === 'upcoming' ? '#AE9D99' : '#eee',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Upcoming Events
+        </button>
+        <button 
+          onClick={() => setTimeTab('CURRENT')}
+          style={{ 
+            padding: '8px 16px', 
+            marginRight: '10px',
+            backgroundColor: timeTab === 'current' ? '#AE9D99' : '#eee',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Current Events
+        </button>
+        <button 
+          onClick={() => setTimeTab('PAST')}
+          style={{ 
+            padding: '8px 16px',
+            backgroundColor: timeTab === 'past' ? '#AE9D99' : '#eee',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Past Events
+        </button>
+      </div>
+
+      {renderEventsTable()}
     </div>
   )
 }
 
 export default Dashboard
-
-//onClick={()=> setAddButtonPopup(true)}  
-//<AddEvent trigger={addButtonPopup} setTrigger={setAddButtonPopup}></AddEvent>
