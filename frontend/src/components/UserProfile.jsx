@@ -260,7 +260,6 @@ const UserProfile = () => {
 
   // Render overview tab
   const renderOverview = () => (
-            <p><strong>Username:</strong> {userScore.username}</p>
     <div className="overview-container" style={{
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
