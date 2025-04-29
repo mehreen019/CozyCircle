@@ -15,6 +15,7 @@ public class admin {
     private String email;
     private String username;
     private String password;
+    private Double score = 0.0;
 
     public admin() {
     }
@@ -32,6 +33,7 @@ public class admin {
         this.email = email;
         this.username = username;
         this.password = password;
+        this.score = 0.0;
     }
 
     public Integer getId() {
@@ -72,5 +74,13 @@ public class admin {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+    
+    public Double getScore() {
+        return score;
+    }
+    
+    public void setScore(Double score) {
+        this.score = score;
     }
 }
