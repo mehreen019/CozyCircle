@@ -247,7 +247,6 @@ const UserProfile = () => {
         onClick={() => setActiveTab('memberships')}
         style={{ 
           padding: '10px 20px', 
-          marginRight: '10px',
           backgroundColor: activeTab === 'memberships' ? '#AE9D99' : '#eee',
           border: 'none',
           borderRadius: '4px',
@@ -256,56 +255,183 @@ const UserProfile = () => {
       >
         Memberships
       </button>
-      <button 
-        onClick={() => setActiveTab('stats')}
-        style={{ 
-          padding: '10px 20px',
-          backgroundColor: activeTab === 'stats' ? '#AE9D99' : '#eee',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}
-      >
-        Statistics
-      </button>
     </div>
   );
 
   // Render overview tab
   const renderOverview = () => (
-    <div className="card">
-      <div className="card-body">
-        <h3 className="card-title">User Profile</h3>
-        {userScore && (
-          <div>
             <p><strong>Username:</strong> {userScore.username}</p>
-            <p><strong>User ID:</strong> {userScore.userId}</p>
-            <div className="score-display" style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              marginTop: '20px',
-              marginBottom: '20px'
-            }}>
-              <h4>Your Score</h4>
-              <div style={{
-                width: '150px',
-                height: '150px',
-                borderRadius: '50%',
-                backgroundColor: '#AE9D99',
+    <div className="overview-container" style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+      gap: '20px'
+    }}>
+      {/* User Info Card */}
+      <div className="card" style={{
+        backgroundColor: '#F5F5F5',
+        borderRadius: '12px',
+        padding: '20px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          width: '100px',
+          height: '100px',
+          borderRadius: '50%',
+          backgroundColor: '#AE9D99',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: '15px',
+          color: 'white',
+          fontSize: '40px',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+        }}>
+          {userScore?.username?.charAt(0).toUpperCase() || 'U'}
+        </div>
+        <h4 style={{ margin: '10px 0', color: '#333' }}>{userScore?.username}</h4>
+        <p style={{ color: '#666', margin: '5px 0' }}>User ID: {userScore?.userId}</p>
+      </div>
+
+      {/* Score Card */}
+      <div className="card" style={{
+        backgroundColor: '#AE9D99',
+        borderRadius: '12px',
+        padding: '20px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        textAlign: 'center'
+      }}>
+        <h4 style={{ marginBottom: '15px', color: 'white' }}>Your Score</h4>
+        <div style={{
+          width: '150px',
+          height: '150px',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(255,255,255,0.2)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          fontSize: '48px',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+        }}>
+          {userScore?.score || 0}
+        </div>
+        <p style={{ marginTop: '15px', fontSize: '14px' }}>Keep engaging to boost your score!</p>
+      </div>
+
+      {/* Detailed Stats Card */}
+      <div className="card" style={{
+        backgroundColor: '#F5F5F5',
+        borderRadius: '12px',
+        padding: '20px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <h4 style={{ marginBottom: '15px', color: '#333', textAlign: 'center' }}>Activity Insights</h4>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{
+            backgroundColor: '#AE9D99',
+            color: 'white',
+            borderRadius: '8px',
+            padding: '10px',
+            textAlign: 'center'
+          }}>
+            <h6 style={{ margin: '0 0 5px 0' }}>Events Created</h6>
+            <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
+              {userStats?.eventsCreated || 0}
+            </p>
+          </div>
+          <div style={{
+            backgroundColor: '#AE9D99',
+            color: 'white',
+            borderRadius: '8px',
+            padding: '10px',
+            textAlign: 'center'
+          }}>
+            <h6 style={{ margin: '0 0 5px 0' }}>Events Attended</h6>
+            <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
+              {userStats?.eventsAttended || 0}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Membership Distribution Card */}
+      {userStats?.membershipDistribution && Object.keys(userStats.membershipDistribution).length > 0 && (
+        <div className="card" style={{
+          backgroundColor: '#F5F5F5',
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          gridColumn: 'span 2'
+        }}>
+          <h4 style={{ marginBottom: '15px', color: '#333', textAlign: 'center' }}>Membership Distribution</h4>
+          <div style={{ display: 'flex', height: '50px' }}>
+            {Object.entries(userStats.membershipDistribution).map(([level, count]) => (
+              <div key={level} style={{ 
+                flex: count, 
+                backgroundColor: getMembershipColor(level), 
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                color: 'white',
-                fontSize: '48px',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                margin: '0 2px',
+                borderRadius: '4px',
+                color: level === 'GOLD' || level === 'SILVER' ? 'black' : 'white',
+                fontWeight: 'bold'
               }}>
-                {userScore.score}
+                {level}: {count}
               </div>
-            </div>
+            ))}
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Additional Stats Card */}
+      <div className="card" style={{
+        backgroundColor: '#F5F5F5',
+        borderRadius: '12px',
+        padding: '20px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <h4 style={{ marginBottom: '15px', color: '#333', textAlign: 'center' }}>More Insights</h4>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{
+            backgroundColor: '#AE9D99',
+            color: 'white',
+            borderRadius: '8px',
+            padding: '10px',
+            textAlign: 'center'
+          }}>
+            <h6 style={{ margin: '0 0 5px 0' }}>Ratings</h6>
+            <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
+              {userStats?.ratingsProvided || 0}
+            </p>
+          </div>
+          <div style={{
+            backgroundColor: '#AE9D99',
+            color: 'white',
+            borderRadius: '8px',
+            padding: '10px',
+            textAlign: 'center'
+          }}>
+            <h6 style={{ margin: '0 0 5px 0' }}>Total Score</h6>
+            <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
+              {userStats?.score || 0}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -316,7 +442,7 @@ const UserProfile = () => {
       <div className="card-body">
         <h3 className="card-title">Your Memberships</h3>
         {userMemberships.length === 0 ? (
-          <p className="text-center">You don't have any memberships yet. Register for events to earn memberships!</p>
+          <p className="text-center">You don&apos;t have any memberships yet. Register for events to earn memberships!</p>
         ) : (
           <div className="table-responsive">
             <table className="table border">
@@ -367,73 +493,6 @@ const UserProfile = () => {
     </div>
   );
 
-  // Render stats tab
-  const renderStats = () => (
-    <div className="card">
-      <div className="card-body">
-        <h3 className="card-title">Your Activity</h3>
-        {userStats && (
-          <div className="row">
-            <div className="col-md-6">
-              <div className="card mb-3">
-                <div className="card-body">
-                  <h5 className="card-title">Events Created</h5>
-                  <p className="card-text" style={{ fontSize: '32px', textAlign: 'center' }}>{userStats.eventsCreated}</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="card mb-3">
-                <div className="card-body">
-                  <h5 className="card-title">Events Attended</h5>
-                  <p className="card-text" style={{ fontSize: '32px', textAlign: 'center' }}>{userStats.eventsAttended}</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="card mb-3">
-                <div className="card-body">
-                  <h5 className="card-title">Ratings Provided</h5>
-                  <p className="card-text" style={{ fontSize: '32px', textAlign: 'center' }}>{userStats.ratingsProvided}</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="card mb-3">
-                <div className="card-body">
-                  <h5 className="card-title">Total Score</h5>
-                  <p className="card-text" style={{ fontSize: '32px', textAlign: 'center' }}>{userStats.score}</p>
-                </div>
-              </div>
-            </div>
-            
-            {userStats.membershipDistribution && Object.keys(userStats.membershipDistribution).length > 0 && (
-              <div className="col-12 mt-3">
-                <h5>Membership Distribution</h5>
-                <div style={{ display: 'flex', marginTop: '15px' }}>
-                  {Object.entries(userStats.membershipDistribution).map(([level, count]) => (
-                    <div key={level} style={{ 
-                      flex: count, 
-                      backgroundColor: getMembershipColor(level), 
-                      padding: '15px 0',
-                      margin: '0 2px',
-                      textAlign: 'center',
-                      color: level === 'GOLD' || level === 'SILVER' ? 'black' : 'white',
-                      fontWeight: 'bold',
-                      borderRadius: '4px'
-                    }}>
-                      {level}: {count}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
   if (loading) {
     return <div className="text-center mt-5"><div className="spinner-border" role="status"></div></div>;
   }
@@ -451,7 +510,6 @@ const UserProfile = () => {
       <div className="tab-content">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'memberships' && renderMemberships()}
-        {activeTab === 'stats' && renderStats()}
       </div>
       
       {showInvite && renderInviteModal()}
