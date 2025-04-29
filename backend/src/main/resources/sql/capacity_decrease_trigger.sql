@@ -3,6 +3,8 @@ select * from eventmanage.event;
 use eventmanage;
 DELIMITER //
 
+
+
 CREATE TRIGGER decrease_event_capacity
 AFTER INSERT ON eventmanage.attendee
 FOR EACH ROW

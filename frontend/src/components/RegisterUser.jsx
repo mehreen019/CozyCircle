@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+
 import { Box, Typography, Button } from '@mui/material'
 import CustomizedInput from './shared/CustomizedInput'
 import {toast } from 'react-hot-toast';
@@ -14,35 +14,39 @@ const AttendeeRegister = () => {
 
   const prevEvent = location?.state.Event;
 
-  const handleSubmit = async (e)=>{
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = new FormData(e.currentTarget)
-    const name = data.get("name"); //we get by name
+    const data = new FormData(e.currentTarget);
+    const name = data.get("name");
     const email = data.get("email");
 
     try {
-      toast.loading("Registering");
-      
-      const response = await addAttendee(prevEvent.id ,name, email);
-      console.log(response)
+      toast.loading("Processing registration...");
 
-      toast.loading("Registered Successfuly");
+      const response = await addAttendee(prevEvent.id, name, email);
+      console.log(response);
+
+      if (response.status === "waitlisted") {
+        toast.success(`Event is full. You've been added to the waitlist at position ${response.position}`);
+      } else {
+        toast.success("Registered successfully!");
+      }
+
       setTimeout(() => {
         toast.dismiss();
       }, 3000);
-
     } catch (error) {
       console.log(error);
-      toast.loading("Failed to register");
+      toast.error("Failed to register");
       setTimeout(() => {
         toast.dismiss();
       }, 3000);
     }
 
     console.log(name + " and " + email);
-
     navigate("/allEvents");
-  }
+  };
 
   return (
       <Box

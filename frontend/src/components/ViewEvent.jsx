@@ -83,31 +83,20 @@ const ViewEvent = () => {
             <CustomizedInput type="country" name="country" label="Country" value={prevEvent.country}/>
             <CustomizedInput type="date" name="date" label="Date" value={format(prevEvent.date, "yyyy-MM-dd")}/>
 
-            <Typography
-              variant="h5"
-              textAlign="center"
-              padding={2}
-              fontWeight={600}
-              color={'black'}
-            >
-            Attendee List 
-            </Typography>
-            <Box sx={{
-              height: '400px', 
-              overflowY: 'scroll',
-              justifyContent: "center",
-              marginBottom: ' 24px'
-            }}>
-                <div className='container'>
-                    {
-                        attendees.map((attendee, index)=>(
-                            <div key={index+1} className='listel' style={{marginTop: '24px'}}>
-                                <h4> {attendee.name}</h4>
-                                {attendee.email}
-                            </div>
-                        ))
-                    }
-                </div>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+              <NavigationLink
+                bg="#AE9D99"
+                to={`/${prevEvent.id}/waitlist-view`}
+                state={{ Event: prevEvent }}
+                text="View Attendee and Waitlist"
+                textColor="black"
+              />
+              <NavigationLink
+                bg="#6D5147"
+                to="/dashboard"
+                text="Back"
+                textColor="black"
+              />
             </Box>
             <NavigationLink
                 bg="#6D5147"

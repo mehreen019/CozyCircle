@@ -4,19 +4,21 @@ import com.event_management.event_management_system_backend.Dto.*;
 import com.event_management.event_management_system_backend.config.UserAuthenticationProvider;
 import com.event_management.event_management_system_backend.mapper.AttendeeMapper;
 import com.event_management.event_management_system_backend.mapper.EventMapper;
-import com.event_management.event_management_system_backend.model.Attendee;
-import com.event_management.event_management_system_backend.model.Event;
-import com.event_management.event_management_system_backend.model.EventRating;
-import com.event_management.event_management_system_backend.model.admin;
+import com.event_management.event_management_system_backend.model.*;
 import com.event_management.event_management_system_backend.repositories.AdminRepository;
 import com.event_management.event_management_system_backend.repositories.AttendeeRepository;
 import com.event_management.event_management_system_backend.repositories.EventRatingRepository;
 import com.event_management.event_management_system_backend.repositories.EventRepository;
 import com.event_management.event_management_system_backend.services.AdminService;
 import com.event_management.event_management_system_backend.services.EventRankingService;
+import com.event_management.event_management_system_backend.services.WaitListService;
+import com.event_management.event_management_system_backend.repositories.WaitListRepository;
+import com.event_management.event_management_system_backend.mapper.WaitListMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,6 +50,15 @@ public class AuthController {
     private final AdminRepository adminRepository;
     private final EventRatingService ratingService;
     private final EventRankingService rankingService;
+
+    @Autowired
+    private WaitListRepository waitlistRepository;
+
+    @Autowired
+    private WaitListMapper waitListMapper;
+
+    @Autowired
+    private WaitListService waitListService;
 
     @PostMapping("/login")
     public ResponseEntity<AdminDto> login(@RequestBody @Valid CredentialsDto credentialsDto){
@@ -101,8 +112,18 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
     return ResponseEntity.ok(eventDto);
 }
 
+    @GetMapping("/getevent/{id}")
+    public ResponseEntity<EventDto> getEvent(@PathVariable Long id){
+        Event savedEvent = eventRepository.findById(id).orElse(null);
+        if(savedEvent == null){
+            return ResponseEntity.notFound().build();
+        }
 
-    @GetMapping("/getevent")
+        EventDto eventDto = eventMapper.eventToEventDto(savedEvent);
+        return ResponseEntity.ok(eventDto);
+    }
+
+    @GetMapping("/getevents")
     public ResponseEntity<List<EventDto>> getEvents(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         AdminDto adminDto = (AdminDto) authentication.getPrincipal();
@@ -194,42 +215,73 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
     }
 
     @PostMapping("/addattendee")
-    public ResponseEntity<Attendee> addAttendee(@RequestBody @Valid Attendee attendee){
+    public ResponseEntity<?> addAttendee(@RequestBody @Valid Attendee attendee) {
         System.out.println("Processing attendee registration: " + attendee.getEmail() + " for event: " + attendee.getEventid());
 
-        // Save the attendee first
-        Attendee savedAttendee = attendeeRepository.save(attendee);
-        System.out.println("Saved attendee: " + savedAttendee.getEventid());
+        try {
+            // Check if user is already registered
+            Optional<Attendee> existingAttendee = attendeeRepository.findByEventidAndEmail(
+                    attendee.getEventid(), attendee.getEmail());
 
-        // Find the user ID from admin table using email
-        admin user = adminRepository.findByEmail(attendee.getEmail()).orElse(null);
-        if (user != null) {
-            System.out.println("Found user: " + user.getId() + ", calling CalculateMembership procedure");
-            // Convert Long to Integer since the stored procedure expects INT parameters
-            Integer mappingId = savedAttendee.getId().intValue();
-            Integer userId = user.getId().intValue();
-            Integer eventId = attendee.getEventid().intValue();
-            
-            try {
-                System.out.println("Calling procedure with mappingId=" + mappingId + ", userId=" + userId + ", eventId=" + eventId);
-                attendeeRepository.calculateMembership(mappingId, userId, eventId);
-                System.out.println("CalculateMembership procedure call completed successfully");
-            } catch (Exception e) {
-                System.err.println("Error calling CalculateMembership procedure: " + e.getMessage());
-                e.printStackTrace();
+            if (existingAttendee.isPresent()) {
+                return ResponseEntity.badRequest().body("User is already registered for this event");
             }
-        } else {
-            System.out.println("No user found with email: " + attendee.getEmail());
+
+            // Check if user is already in waitlist
+            Optional<WaitList> existingWaitlist = waitlistRepository.findByEventidAndEmail(
+                    attendee.getEventid(), attendee.getEmail());
+
+            if (existingWaitlist.isPresent()) {
+                return ResponseEntity.badRequest().body("User is already in the waitlist for this event");
+            }
+
+            // Get event and check capacity
+            Optional<Event> event = eventRepository.findById(attendee.getEventid());
+            if (event.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found");
+            }
+
+            long currentAttendees = attendeeRepository.findByEventid(attendee.getEventid()).size();
+            int eventCapacity = event.get().getCapacity();
+
+            if (currentAttendees < eventCapacity) {
+                Attendee savedAttendee = attendeeRepository.save(attendee);
+
+                // Call calculateMembership if user exists in admin table
+                admin user = adminRepository.findByEmail(attendee.getEmail()).orElse(null);
+                if (user != null) {
+                    Integer mappingId = savedAttendee.getId().intValue();
+                    Integer userId = user.getId().intValue();
+                    Integer eventId = attendee.getEventid().intValue();
+
+                    try {
+                        attendeeRepository.calculateMembership(mappingId, userId, eventId);
+                    } catch (Exception e) {
+                        System.err.println("Error calling CalculateMembership procedure: " + e.getMessage());
+                    }
+                }
+
+                return ResponseEntity.ok(savedAttendee);
+            }
+
+            WaitList waitlistEntry = waitListService.addToWaitlist(
+                    attendee.getEventid(), attendee.getName(), attendee.getEmail());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "waitlisted");
+            response.put("position", waitlistEntry.getPosition());
+            response.put("message", "Event is full. You have been added to the waitlist at position " + waitlistEntry.getPosition());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to process registration: " + e.getMessage());
         }
-
-        // Fetch the updated attendee with membership
-        Optional<Attendee> updatedAttendee = attendeeRepository.findById(savedAttendee.getId());
-        System.out.println("Updated membership: " + (updatedAttendee.isPresent() ? updatedAttendee.get().getMembership() : "Not set"));
-
-        return ResponseEntity.ok(savedAttendee);
     }
 
-    @DeleteMapping("/unregister")
+
+    /*@DeleteMapping("/unregister")
     public ResponseEntity<?> unregisterFromEvent(@RequestParam Long eventId, @RequestParam String email) {
         System.out.println("Attempting to unregister email: " + email + " from event ID: " + eventId);
 
@@ -243,7 +295,7 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
             System.out.println("Attendee not found");
             return ResponseEntity.badRequest().body("User was not registered to this event");
         }
-    }
+    }*/
 
 
     @GetMapping("/attendees/{id}")
@@ -254,6 +306,73 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
             System.out.println(attendees.get(0).getEventid());
         }
         return ResponseEntity.ok(attendees);
+    }
+
+    @GetMapping("/waitlist/{id}")
+    public ResponseEntity<List<WaitListDto>> getWaitlistForEvent(@PathVariable Long id){
+        List<WaitList> waitlist = waitListService.getWaitlistForEvent(id);
+        List<WaitListDto> waitlistDtoList = waitListMapper.listWaitListToDto(waitlist);
+        return ResponseEntity.ok(waitlistDtoList);
+    }
+
+    @GetMapping("/check-registration-status")
+    public ResponseEntity<?> checkRegistrationStatus(@RequestParam Long eventId, @RequestParam String email) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Check if registered as attendee
+        Optional<Attendee> attendee = attendeeRepository.findByEventidAndEmail(eventId, email);
+        if (attendee.isPresent()) {
+            response.put("status", "registered");
+            response.put("message", "You are registered for this event");
+            return ResponseEntity.ok(response);
+        }
+
+        // Check if on waitlist
+        Optional<WaitList> waitlistEntry = waitlistRepository.findByEventidAndEmail(eventId, email);
+        if (waitlistEntry.isPresent()) {
+            response.put("status", "waitlisted");
+            response.put("position", waitlistEntry.get().getPosition());
+            response.put("message", "You are on the waitlist at position " + waitlistEntry.get().getPosition());
+            return ResponseEntity.ok(response);
+        }
+
+        // Not registered or waitlisted
+        response.put("status", "not_registered");
+        response.put("message", "You are not registered for this event");
+        return ResponseEntity.ok(response);
+    }
+
+    // Update the unregister endpoint to handle waitlist promotion
+    @DeleteMapping("/unregister")
+    public ResponseEntity<?> unregisterFromEvent(@RequestParam Long eventId, @RequestParam String email) {
+        System.out.println("Attempting to unregister email: " + email + " from event ID: " + eventId);
+
+        Optional<Attendee> attendeeOptional = attendeeRepository.findByEventidAndEmail(eventId, email);
+
+        if (attendeeOptional.isPresent()) {
+            // Delete the attendee
+            attendeeRepository.delete(attendeeOptional.get());
+
+            // Get the event to update capacity
+            Optional<Event> eventOptional = eventRepository.findById(eventId);
+            if (eventOptional.isPresent()) {
+                Event event = eventOptional.get();
+                event.setCapacity(event.getCapacity() + 1);
+                eventRepository.save(event);
+
+                // Try to promote someone from waitlist
+                boolean promoted = waitListService.promoteFromWaitlist(eventId);
+
+                if (promoted) {
+                    return ResponseEntity.ok("Successfully unregistered from event. Someone from the waitlist has been registered.");
+                } else {
+                    return ResponseEntity.ok("Successfully unregistered from event.");
+                }
+            }
+            return ResponseEntity.ok("Successfully unregistered from event.");
+        } else {
+            return ResponseEntity.badRequest().body("User was not registered to this event");
+        }
     }
 
 @PostMapping("/events/rate")

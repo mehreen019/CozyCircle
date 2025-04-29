@@ -21,6 +21,7 @@ import EventAnalytics from './components/EventAnalytics'
 import EventCategoryCount from './components/EventCategoryCount'
 import UserProfile from './components/UserProfile'
 import Leaderboard from './components/Leaderboard'
+import WaitlistView from './components/WaitlistView'
 
 function App() {
 
@@ -45,6 +46,7 @@ function App() {
         <Route path="/ExploreEvent" element={<ExploreEvents/>} />
         <Route path="/count/:eventId" element={<TotalRatingsPage/>} />
         <Route path= "/events/category-counts" element={<EventCategoryCount/>} />
+        <Route path='/:eventId/waitlist-view' element={<WaitlistView/>} />
        
 
         {/* New routes for event rankings and analytics */}
