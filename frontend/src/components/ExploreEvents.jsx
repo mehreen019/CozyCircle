@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css'; // Fix typo here (sick → slick)
-import { getAllEvents, addAttendee, filterEvents, getRegisteredEvents, unregisterUser } from '../helpers/api_communicator';
+import 'slick-carousel/slick/slick-theme.css';
+import { 
+  getAllEvents, 
+  addAttendee, 
+  filterEvents, 
+  getRegisteredEvents, 
+  unregisterUser,
+  getArchivedEvents,
+  filterArchivedEvents,
+  triggerArchiving
+} from '../helpers/api_communicator';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -11,39 +19,17 @@ import 'react-toastify/dist/ReactToastify.css';
 import FilterPanel from './FilterPanel';
 import '../styles/ExploreEvents.css';
 
-
-
-const carouselSettings = {
-  dots: true,
-  infinite: false,
-  speed: 500,
-  slidesToShow: 3,
-  slidesToScroll: 1,
-  responsive: [
-    {
-      breakpoint: 1024,
-      settings: {
-        slidesToShow: 2,
-        slidesToScroll: 1,
-      }
-    },
-    {
-      breakpoint: 768,
-      settings: {
-        slidesToShow: 1,
-        slidesToScroll: 1
-      }
-    }
-  ]
-};
 const ExploreEvents = () => {
   const [events, setEvents] = useState([]);
+  const [archivedEvents, setArchivedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [archivedLoading, setArchivedLoading] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
   const [reset, setReset] = useState(false);
   const [registeredEventIds, setRegisteredEventIds] = useState([]);
-const [recommendedEvents, setRecommendedEvents] = useState([]);
-const [recommendedLoading, setRecommendedLoading] = useState(true);
+  const [recommendedEvents, setRecommendedEvents] = useState([]);
+  const [recommendedLoading, setRecommendedLoading] = useState(true);
   const [filters, setFilters] = useState({
     name: '',
     city: '',
@@ -67,40 +53,34 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
     } else {
       // Initial load
       fetchEvents();
+      fetchArchivedEvents();
       setReset(false); // Reset the reset state after fetching events
     }
-  }, [auth, navigate, reset]); // Removed registeredEventIds from dependencies
+  }, [auth, navigate, reset]);
 
   // Second useEffect to handle registered events fetch
   useEffect(() => {
     if (auth?.user) {
       fetchRegisteredEvents();
     }
-  }, [auth?.user?.email]); // Only depend on the user's email
-   // Fetch recommended events
-   useEffect(() => {
+  }, [auth?.user?.email]); 
+
+  // Fetch recommended events
+  useEffect(() => {
     const fetchRecommendedEvents = async () => {
       if (!auth?.user?.username) return;
       
       try {
-        console.log(auth.user.username);
         const response = await fetch(
           `http://localhost:8081/events/recommended?username=${auth.user.username}`
         );
         
-        // First check if response is OK
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        // Parse the JSON data from the response
         const data = await response.json();
-        console.log("Parsed data:", data);
-        
-        // Now format the events
         setRecommendedEvents(formatEvents(data));
-        console.log ("rec " + recommendedEvents);
-        
       } catch (error) {
         console.error('Error fetching recommendations:', error);
         toast.error('Failed to load recommendations');
@@ -111,20 +91,16 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
   
     fetchRecommendedEvents();
   }, [auth?.user?.username]);
+
   // Function to fetch events based on the applied filters
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      // Otherwise use the filter endpoint with the current filter state 
       const filterParams = prepareFilterParams();
-
-      console.log("Filtered parameters:", filterParams);
       const response = await filterEvents(filterParams);
-      console.log("Filtered events:", response);
       setEvents(formatEvents(response));
     } catch (error) {
       console.error('Error fetching events:', error);
-      // Fallback to getAllEvents if the filter/search API fails
       try {
         const allEvents = await getAllEvents();
         setEvents(formatEvents(allEvents));
@@ -134,6 +110,27 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Function to fetch archived events
+  const fetchArchivedEvents = async () => {
+    setArchivedLoading(true);
+    try {
+      const filterParams = prepareFilterParams();
+      const response = await filterArchivedEvents(filterParams);
+      setArchivedEvents(formatEvents(response));
+    } catch (error) {
+      console.error('Error fetching archived events:', error);
+      try {
+        const allArchivedEvents = await getArchivedEvents();
+        setArchivedEvents(formatEvents(allArchivedEvents));
+      } catch (fallbackError) {
+        console.error('Fallback error:', fallbackError);
+        toast.error('Failed to load archived events. Please try again later.');
+      }
+    } finally {
+      setArchivedLoading(false);
     }
   };
 
@@ -170,12 +167,15 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
   // Apply filters when filter button is clicked
   const handleApplyFilters = () => {
     fetchEvents();
+    if (showArchived) {
+      fetchArchivedEvents();
+    }
   };
+
   const handleNextEvent = () => {
-    
-    console.log(recommendedEvents[0].rating);
     setCurrentEventIndex((prevIndex) => (prevIndex + 1) % recommendedEvents.length);
   };
+
   // Reset filters to default
   const handleResetFilters = () => {
     const defaultFilters = {
@@ -194,22 +194,37 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
   
     setFilters(defaultFilters);
     setReset(!reset); // Trigger a re-render to reset filters
-
-    console.log("Filters reset to default values.", filters.name);
   };
 
   const fetchRegisteredEvents = async () => {
     try {
       const response = await getRegisteredEvents(auth?.user.email);
-      const registeredIds = response.map(event => event.id); // Assuming API returns array of event objects
+      const registeredIds = response.map(event => event.id);
       setRegisteredEventIds(registeredIds);
-      console.log("Registered event IDs:", registeredIds);
     } catch (error) {
       console.error('Error fetching registered events:', error);
       toast.error('Failed to load registered events.');
     }
   };
   
+  const handleToggleArchived = () => {
+    setShowArchived(!showArchived);
+    if (!showArchived && archivedEvents.length === 0) {
+      fetchArchivedEvents();
+    }
+  };
+
+  const handleManualArchive = async () => {
+    try {
+      const result = await triggerArchiving();
+      toast.success(result.result || "Archiving completed successfully");
+      fetchEvents();
+      fetchArchivedEvents();
+    } catch (error) {
+      console.error('Error triggering manual archive:', error);
+      toast.error('Failed to run archiving process');
+    }
+  };
 
   const handleRegisterClick = async (event) => {
     if (!auth?.user) {
@@ -250,15 +265,13 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
   
       if (response.status === 200) {
         toast.success("Unregistered Successfully!", { autoClose: 3000 });
-        await fetchRegisteredEvents(); // Refresh the registered event IDs
+        await fetchRegisteredEvents();
       }
     } catch (error) {
       console.error(error);
       toast.error("Failed to unregister. Try again.");
     }
   };
-  
-  
 
   // Generate star rating display
   const renderStars = (rating) => {
@@ -279,6 +292,38 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
     return stars;
   };
 
+  // Render event card
+  const renderEventCard = (event, isArchived) => (
+    <div className={`event-card ${isArchived ? 'archived' : ''}`} key={event.id}>
+      {isArchived && <div className="archived-badge">Archived</div>}
+      <h3 className="event-name">{event.name}</h3>
+      <div className="event-location">{event.city}, {event.country}</div>
+      <div className="event-date">{format(new Date(event.date), 'MMMM dd, yyyy')}</div>
+      <div className="event-rating">
+        <div className="stars">{renderStars(event.averageRating)}</div>
+        <span className="rating-value">Rating: {event.averageRating?.toFixed(1) ?? event.avergae_rating?.toFixed(1) ?? 0}/5</span>
+        {event.totalRatings > 0 && (
+          <span className="total-ratings">({event.totalRatings} ratings)</span>
+        )}
+      </div>
+      {event.capacity && (
+        <div className="event-capacity">Capacity: {event.capacity}</div>
+      )}
+      <div className="event-actions">
+        <Link className="view-btn" to={{ pathname: "/viewCommonEvent" }} state={{ Event: event }}>
+          View
+        </Link>
+        {!isArchived && auth?.user && auth?.user.username === event.username ? (
+          <button className="unregister-btn" disabled>Created</button>
+        ) : !isArchived && registeredEventIds.includes(event.id) ? (
+          <button className="unregister-btn" onClick={() => handleUnregisterClick(event)}>Unregister</button>
+        ) : !isArchived && (
+          <button className="register-btn" onClick={() => handleRegisterClick(event)}>Register</button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="explore-events-container">
       <h1>Explore Events</h1>
@@ -286,53 +331,52 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
       <div className="explore-content">
         {/* LEFT COLUMN */}
         <div className="left-panel">
-                              {/* Recommendations */}
-<div className="recommendation-section fun-card-wrapper">
-  <h2 className="recommendation-heading">Recommended For You</h2>
-  {recommendedLoading ? (
-    <div className="loading-recommendations">Loading...</div>
-  ) : recommendedEvents.length === 0 ? (
-    <div className="no-recommendations">
-      Rate more events to get personalized suggestions!
-    </div>
-  ) : (
-    <div className="recommendation-card-wrapper">
-      {/* Display current event */}
-      <div className="recommendation-item">
-        <h3 className="rec-event-name">{recommendedEvents[currentEventIndex]?.name}</h3>
-        <div className="rec-event-location">
-          {recommendedEvents[currentEventIndex]?.city}, {recommendedEvents[currentEventIndex]?.country}
-        </div>
-        <div className="rec-event-date">
-          {format(new Date(recommendedEvents[currentEventIndex]?.date), 'MMMM dd, yyyy')}
-        </div>
-        <div className="rec-event-rating">
-          <div className="stars">
-            {renderStars(recommendedEvents[currentEventIndex]?.rating || 0)}
+          {/* Recommendations */}
+          <div className="recommendation-section fun-card-wrapper">
+            <h2 className="recommendation-heading">Recommended For You</h2>
+            {recommendedLoading ? (
+              <div className="loading-recommendations">Loading...</div>
+            ) : recommendedEvents.length === 0 ? (
+              <div className="no-recommendations">
+                Rate more events to get personalized suggestions!
+              </div>
+            ) : (
+              <div className="recommendation-card-wrapper">
+                {/* Display current event */}
+                <div className="recommendation-item">
+                  <h3 className="rec-event-name">{recommendedEvents[currentEventIndex]?.name}</h3>
+                  <div className="rec-event-location">
+                    {recommendedEvents[currentEventIndex]?.city}, {recommendedEvents[currentEventIndex]?.country}
+                  </div>
+                  <div className="rec-event-date">
+                    {format(new Date(recommendedEvents[currentEventIndex]?.date), 'MMMM dd, yyyy')}
+                  </div>
+                  <div className="rec-event-rating">
+                    <div className="stars">
+                      {renderStars(recommendedEvents[currentEventIndex]?.rating || 0)}
+                    </div>
+                    <span className="rating-value">
+                      {(recommendedEvents[currentEventIndex]?.rating || 0).toFixed(1)}/5
+                    </span>
+                  </div>
+                  <Link
+                    className="view-rec-btn"
+                    to={{ pathname: "/viewCommonEvent" }}
+                    state={{ Event: recommendedEvents[currentEventIndex] }}
+                  >
+                    View Details
+                  </Link>
+                </div>
+
+                {/* Next Button */}
+                {recommendedEvents.length > 1 && (
+                  <button className="next-btn" onClick={handleNextEvent}>
+                    Next Event
+                  </button>
+                )}
+              </div>
+            )}
           </div>
-          <span className="rating-value">
-            {(recommendedEvents[currentEventIndex]?.rating || 0).toFixed(1)}/5
-          </span>
-        </div>
-        <Link
-          className="view-rec-btn"
-          to={{ pathname: "/viewCommonEvent" }}
-          state={{ Event: recommendedEvents[currentEventIndex] }}
-        >
-          View Details
-        </Link>
-      </div>
-
-      {/* Next Button */}
-      {recommendedEvents.length > 1 && (
-        <button className="next-btn" onClick={handleNextEvent}>
-          Next Event
-        </button>
-      )}
-    </div>
-  )}
-</div>
-
   
           {/* Filter Panel */}
           <FilterPanel 
@@ -341,51 +385,56 @@ const [recommendedLoading, setRecommendedLoading] = useState(true);
             onApplyFilters={handleApplyFilters}
             onResetFilters={handleResetFilters}
           />
-        </div>
-  
-        {/* RIGHT COLUMN */}
-          <div className="events-grid">
-            {loading ? (
-              <div className="loading">Loading events...</div>
-            ) : events?.length > 0 ? (
-              events.map(event => (
-                <div className="event-card" key={event.id}>
-                  <h3 className="event-name">{event.name}</h3>
-                  <div className="event-location">{event.city}, {event.country}</div>
-                  <div className="event-date">{format(new Date(event.date), 'MMMM dd, yyyy')}</div>
-                  <div className="event-rating">
-                    <div className="stars">{renderStars(event.averageRating)}</div>
-                    <span className="rating-value">Rating: {event.averageRating.toFixed(1)}/5</span>
-                    {event.totalRatings > 0 && (
-                      <span className="total-ratings">({event.totalRatings} ratings)</span>
-                    )}
-                  </div>
-                  {event.capacity && (
-                    <div className="event-capacity">Capacity: {event.capacity}</div>
-                  )}
-                  <div className="event-actions">
-                    <Link className="view-btn" to={{ pathname: "/viewCommonEvent" }} state={{ Event: event }}>
-                      View
-                    </Link>
-                    {auth?.user && auth?.user.username === event.username ? (
-                      <button className="unregister-btn" disabled>Created</button>
-                    ) : registeredEventIds.includes(event.id) ? (
-                      <button className="unregister-btn" onClick={() => handleUnregisterClick(event)}>Unregister</button>
-                    ) : (
-                      <button className="register-btn" onClick={() => handleRegisterClick(event)}>Register</button>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="no-events">No events found matching your criteria.</div>
+          
+          {/* Archived Events Toggle */}
+          <div className="archived-controls">
+            <button 
+              className={`archive-toggle-btn ${showArchived ? 'active' : ''}`} 
+              onClick={handleToggleArchived}
+            >
+              {showArchived ? 'Hide Archived Events' : 'Show Archived Events'}
+            </button>
+            {auth?.user?.role === 'admin' && (
+              <button className="manual-archive-btn" onClick={handleManualArchive}>
+                Archive Old Events Now
+              </button>
             )}
           </div>
         </div>
+  
+        {/* RIGHT COLUMN */}
+        <div className="events-content">
+          {/* Current Events Section */}
+          {!showArchived && (
+            <div className="events-grid">
+              <h2 className="section-title">Upcoming Events</h2>
+              {loading ? (
+                <div className="loading">Loading events...</div>
+              ) : events?.length > 0 ? (
+                events.map(event => renderEventCard(event, false))
+              ) : (
+                <div className="no-events">No events found matching your criteria.</div>
+              )}
+            </div>
+          )}
+          
+          {/* Archived Events Section */}
+          {showArchived && (
+            <div className="events-grid archived-grid">
+              <h2 className="section-title">Archived Events</h2>
+              {archivedLoading ? (
+                <div className="loading">Loading archived events...</div>
+              ) : archivedEvents?.length > 0 ? (
+                archivedEvents.map(event => renderEventCard(event, true))
+              ) : (
+                <div className="no-events">No archived events found.</div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    
+    </div>
   );
-  
-  
-}
+};
+
 export default ExploreEvents;

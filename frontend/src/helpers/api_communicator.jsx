@@ -373,5 +373,46 @@ export const getWaitlist = async (id) => {
   }
 };
 
+export const getArchivedEvents = async () => {
+  try {
+    const response = await request("GET", "/events/archived", {});
 
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching archived events:', error);
+    throw error;
+  }
+};
+
+// Filter archived events 
+export const filterArchivedEvents = async (filterParams) => {
+  try {
+    // Build query string from filter parameters
+    const queryParams = Object.entries(filterParams)
+      .filter(([_, value]) => value !== null && value !== undefined)
+      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+      .join('&');
+    
+    const response = await request( "GET", `/events/filter-archived?${queryParams}`, {});
+
+    console.log("Filtered archived events:", response.data);
+    
+    return await response.data;
+  } catch (error) {
+    console.error('Error filtering archived events:', error);
+    throw error;
+  }
+};
+
+// Manual trigger for archiving old events (admin only)
+export const triggerArchiving = async () => {
+  try {
+    const response = await request('POST', `/events/archive-old`, {});
+    
+    return await response.data;
+  } catch (error) {
+    console.error('Error triggering archiving process:', error);
+    throw error;
+  }
+};
 

@@ -27,6 +27,9 @@ public class Event {
     @Column(name = "time_category")
     private String timeCategory;
 
+    @Column(name = "archived", nullable = false)
+    private boolean archived = false;
+
     // @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     //private List<Attendee> attendees;
 
@@ -47,6 +50,7 @@ public class Event {
         this.capacity= capacity;
         this.total_ratings=0;
         this.timeCategory = timeCategory;
+        this.archived = false;
     }
 
     public String getUsername() {
@@ -154,5 +158,13 @@ public class Event {
 
     public void setTimeCategory(String timeCategory) {
         this.timeCategory = timeCategory;
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 }

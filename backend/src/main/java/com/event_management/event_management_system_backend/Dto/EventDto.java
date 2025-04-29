@@ -25,6 +25,7 @@ public class EventDto {
     private int total_ratings = 0;
     private String category;
     private String timeCategory;
+    private boolean archived = false;
 
     // Getter and Setter for 'id'
     public Long getId() {
@@ -145,4 +146,10 @@ public class EventDto {
     public void setTimeCategory(String timeCategory) {
         this.timeCategory = timeCategory;
     }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {}
 }
