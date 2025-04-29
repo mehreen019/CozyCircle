@@ -44,6 +44,7 @@ public class AuthController {
     private final UserAuthenticationProvider userAuthenticationProvider;
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
+    private final  EventRatingService eventRatingService;
     private final AttendeeMapper attendeeMapper;
     private final AttendeeRepository attendeeRepository;
     private final EventRatingRepository eventRatingRepository;
@@ -505,6 +506,12 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
     return ResponseEntity.ok(categoryCount);
      }
 
+     @GetMapping("/events/place")
+     public ResponseEntity<List<EventSummaryDto>> getEventPlace(@RequestParam String username) {
+        List<EventSummaryDto> placeCount = eventService.getEventSummary(username);
+        return ResponseEntity.ok(placeCount);
+     }
+
 
     @GetMapping("/user/score")
     public ResponseEntity<?> getUserScore(@RequestParam String email) {
@@ -619,5 +626,12 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
         
         return ResponseEntity.ok(stats);
     }
+
+    @GetMapping("/events/recommended")
+     public ResponseEntity<List<Event>> getRecommendedEvents(@RequestParam String username) {
+        System.out.println(username+"reached");
+    List<Event> recommendedEvents = eventRatingService.recommendEvents(username);
+    return ResponseEntity.ok(recommendedEvents);
+}
 
 }

@@ -92,6 +92,7 @@ const CommonViewEvent = () => {
         <CustomizedInput type="place" name="place" label="Place" value={prevEvent.place} />
         <CustomizedInput type="city" name="city" label="City" value={prevEvent.city} />
         <CustomizedInput type="country" name="country" label="Country" value={prevEvent.country} />
+        <CustomizedInput type="category" name="category" label="Category" value={prevEvent.category} />
         <CustomizedInput type="date" name="date" label="Date" value={format(prevEvent.date, "yyyy-MM-dd")} />
       </Box>
 

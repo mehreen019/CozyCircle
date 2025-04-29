@@ -178,3 +178,115 @@
       width: 100%;
     }
   }
+  /* Recommended section */
+
+  .left-panel {
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .recommendation-section {
+    background-color: #f9f9f9;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .recommendation-slider {
+    margin-top: 12px;
+  }
+  
+  
+  
+  .right-panel {
+    flex: 1;
+  }
+  
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .recommendation-item {
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    margin: 0 10px;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .recommendation-item:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  }
+  
+  .rec-event-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ff5f6d;
+    margin-bottom: 8px;
+  }
+  
+  .rec-event-location,
+  .rec-event-date {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  
+  .rec-event-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+  }
+  
+  .stars {
+    color: #ffc107;
+    font-size: 1.1rem;
+  }
+  
+  .rating-value {
+    font-weight: 600;
+    color: #390639;
+  }
+  
+  .view-rec-btn {
+    background-color: #6a82fb;
+    color: #fff;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: auto;
+    transition: background-color 0.2s ease;
+  }
+  
+  .view-rec-btn:hover {
+    background-color: #5b6dfb;
+  }
+  .fun-card-wrapper {
+    background: #fefefe;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    margin-bottom: 20px;
+  }
+  
+  .recommendation-heading {
+    font-size: 1.5rem;
+    color: #444;
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+  

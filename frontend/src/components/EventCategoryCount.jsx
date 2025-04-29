@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../context/AuthContext";
+import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
 
 const EventCategoryCount = () => {
   const { user } = useAuth();
   const [categoryData, setCategoryData] = useState([]);
+  const [locationData, setLocationData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -16,30 +18,66 @@ const EventCategoryCount = () => {
 
     const fetchData = async () => {
       try {
-        const response = await fetch(
+        // Fetch category count data
+        const categoryResponse = await fetch(
           `http://localhost:8081/events/category/count?username=${user.username}`
         );
         
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
+        if (!categoryResponse.ok) {
+          throw new Error(`Error: ${categoryResponse.status}`);
         }
         
-        const data = await response.json();
+        const categoryData = await categoryResponse.json();
         
-        // Process data to remove duplicates
-        const processedData = [];
+        // Process category data to remove duplicates
+        const processedCategoryData = [];
         const categories = new Set();
         
-        if (Array.isArray(data)) {
-          data.forEach(item => {
+        if (Array.isArray(categoryData)) {
+          categoryData.forEach(item => {
             if (!categories.has(item.category)) {
               categories.add(item.category);
-              processedData.push(item);
+              processedCategoryData.push(item);
             }
           });
         }
         
-        setCategoryData(processedData);
+        setCategoryData(processedCategoryData);
+
+        // Fetch location data
+        const locationResponse = await fetch(
+          `http://localhost:8081/events/place?username=${user.username}`
+        );
+
+        if (!locationResponse.ok) {
+          throw new Error(`Error: ${locationResponse.status}`);
+        }
+
+        const locationData = await locationResponse.json();
+        console.log("Location Data:", JSON.stringify(locationData, null, 2));
+        
+        // Process location data
+        if (Array.isArray(locationData)) {
+          // Convert to array format with proper null/empty string handling
+          const processedData = locationData.map(item => ({
+            category: item?.category ?? 'null',
+            location: item?.place === '' ? 'null' : (item?.place ?? 'null'),
+            count: item?.eventCount ?? 0
+          }));
+
+          // Sort by count (ascending), then category, then location
+          processedData.sort((a, b) => {
+            if (a.count !== b.count) {
+              return a.count - b.count; // Sort by count in ascending order
+            }
+            if (a.category === b.category) {
+              return a.location.localeCompare(b.location);
+            }
+            return a.category.localeCompare(b.location);
+          });
+          
+          setLocationData(processedData);
+        }
       } catch (error) {
         console.error("Fetch error:", error);
         setErrorMessage(error.message);
@@ -51,21 +89,11 @@ const EventCategoryCount = () => {
     fetchData();
   }, [user?.username]);
 
-  // These are the critical CSS properties that prevent the white screen
-  const criticalStyles = {
-    position: 'relative',
-    zIndex: 50,
-    display: 'block',
-    opacity: 1,
-    overflow: 'visible'
-  };
-
-  // Professional-looking container styles
+  // Styles
   const containerStyles = {
-    ...criticalStyles,
     backgroundColor: '#ffffff',
     borderRadius: '8px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     padding: '24px',
     margin: '16px 0',
     fontFamily: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -74,84 +102,86 @@ const EventCategoryCount = () => {
     width: '100%'
   };
 
-  // Header styles
   const headerStyles = {
     color: '#2d3748',
-    fontSize: '18px',
-    fontWeight: '600',
+    fontSize: '24px',
+    fontWeight: '700',
     marginBottom: '16px',
-    borderBottom: '1px solid #edf2f7',
+    borderBottom: '2px solid #edf2f7',
     paddingBottom: '12px'
   };
 
-  // Loading indicator styles
   const loadingStyles = {
     padding: '16px 0',
     color: '#718096',
-    fontSize: '14px',
+    fontSize: '16px',
     display: 'flex',
     alignItems: 'center'
   };
 
-  // Error message styles
   const errorStyles = {
     padding: '12px',
     backgroundColor: '#fff5f5',
     color: '#e53e3e',
     borderRadius: '4px',
-    fontSize: '14px',
+    fontSize: '16px',
     marginBottom: '8px'
   };
 
-  // Empty state styles
   const emptyStyles = {
     padding: '16px 0',
     color: '#718096',
-    fontSize: '14px',
+    fontSize: '16px',
     fontStyle: 'italic'
   };
 
-  // Item container styles
-  const itemContainerStyles = {
-    marginTop: '8px'
+  const tableStyles = {
+    width: '100%',
+    borderCollapse: 'collapse',
+    marginTop: '16px'
   };
 
-  // Individual item styles
-  const itemStyles = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '12px 16px',
+  const headerCellStyles = {
+    backgroundColor: '#f4f4f4',
+    padding: '12px',
+    textAlign: 'left',
+    borderBottom: '2px solid #edf2f7',
+    fontWeight: '600'
+  };
+
+  const rowStyles = {
+    padding: '12px',
     borderBottom: '1px solid #edf2f7',
     transition: 'background-color 0.2s',
-    borderRadius: '4px'
   };
 
-  // Item hover effect - note: this won't work with inline styles but keeping for reference
-  const itemHoverStyles = {
-    backgroundColor: '#f7fafc'
-  };
-
-  // Category name styles
-  const categoryStyles = {
+  const categoryCellStyles = {
+    padding: '12px',
     color: '#4a5568',
-    fontSize: '15px'
+    fontSize: '16px'
   };
 
-  // Count styles
   const countStyles = {
     fontWeight: '600',
     color: '#3182ce',
-    backgroundColor: '#ebf8ff',
-    padding: '2px 8px',
-    borderRadius: '12px',
-    fontSize: '14px'
+    backgroundbackgroundColor: '#e2f0fa',
+    borderRadius: '4px',
+    padding: '4px 8px',
+    textAlign: 'center'
   };
 
-  // Total count specific styles - for highlighting the total
   const totalCountStyles = {
-    ...countStyles,
-    backgroundColor: '#c6f6d5',
-    color: '#38a169'
+    fontWeight: '700',
+    color: '#2c5282',
+    backgroundColor: '#cbd5e0',
+    borderRadius: '4px',
+    padding: '4px 8px',
+    textAlign: 'center'
+  };
+
+  const itemHoverStyles = {
+    backgroundColor: '#f1f1f1',
+    cursor: 'pointer'
   };
 
   return (
@@ -160,21 +190,15 @@ const EventCategoryCount = () => {
       
       {isLoading && (
         <div style={loadingStyles}>
-          <div style={{marginRight: '8px'}}>Loading categories</div>
-          <div style={{
-            width: '16px',
-            height: '16px',
-            border: '2px solid #cbd5e0',
-            borderTopColor: '#3182ce',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
+          <FaSpinner className="spin" style={{ marginRight: '8px', fontSize: '20px' }} />
+          <div>Loading categories...</div>
         </div>
       )}
       
       {!isLoading && errorMessage && (
         <div style={errorStyles}>
-          <span style={{fontWeight: '500'}}>Error:</span> {errorMessage}
+          <FaExclamationCircle style={{ marginRight: '8px' }} />
+          <span>Error: {errorMessage}</span>
         </div>
       )}
       
@@ -183,24 +207,90 @@ const EventCategoryCount = () => {
       )}
       
       {!isLoading && !errorMessage && categoryData.length > 0 && (
-        <div style={itemContainerStyles}>
-          {categoryData.map((item, index) => (
-            <div key={index} style={itemStyles}>
-              <span style={categoryStyles}>
-                {item.category}
-              </span>
-              <span style={item.category === 'Total' ? totalCountStyles : countStyles}>
-                {item.count}
-              </span>
-            </div>
-          ))}
-        </div>
+        <>
+          <table style={tableStyles}>
+            <thead>
+              <tr>
+                <th style={headerCellStyles}>Category</th>
+                <th style={headerCellStyles}>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categoryData.map((item, index) => (
+                <tr 
+                  key={index} 
+                  style={{ 
+                    ...rowStyles, 
+                    ...(item.category === 'Total' ? totalCountStyles : {}), 
+                    ':hover': itemHoverStyles 
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = itemHoverStyles.backgroundColor;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <td style={categoryCellStyles}>
+                    {item.category}
+                  </td>
+                  <td style={item.category === 'Total' ? totalCountStyles : countStyles}>
+                    {item.count}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div style={{
+            height: '1px',
+            backgroundColor: '#e2e8f0',
+            margin: '32px 0',
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+          }} />
+
+          <h2 style={{...headerStyles, marginTop: '16px'}}>Event Category by Location</h2>
+          <table style={tableStyles}>
+            <thead>
+              <tr>
+                <th style={headerCellStyles}>Category</th>
+                <th style={headerCellStyles}>Location</th>
+                <th style={headerCellStyles}>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              {locationData.map((item, index) => (
+                <tr 
+                  key={index} 
+                  style={{ 
+                    ...rowStyles,
+                    ...(item.category === 'Total' ? totalCountStyles : {}),
+                    ':hover': itemHoverStyles 
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = itemHoverStyles.backgroundColor;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <td style={categoryCellStyles}>{item.category}</td>
+                  <td style={categoryCellStyles}>{item.location}</td>
+                  <td style={item.category === 'Total' ? totalCountStyles : countStyles}>{item.count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
 
       <style jsx>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        .spin {
+          animation: spin 1s linear infinite;
         }
       `}</style>
     </div>
