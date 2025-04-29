@@ -7,6 +7,7 @@ import com.event_management.event_management_system_backend.mapper.EventMapper;
 import com.event_management.event_management_system_backend.model.Attendee;
 import com.event_management.event_management_system_backend.model.Event;
 import com.event_management.event_management_system_backend.model.EventRating;
+import com.event_management.event_management_system_backend.model.admin;
 import com.event_management.event_management_system_backend.repositories.AdminRepository;
 import com.event_management.event_management_system_backend.repositories.AttendeeRepository;
 import com.event_management.event_management_system_backend.repositories.EventRatingRepository;
@@ -191,11 +192,37 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
 
     @PostMapping("/addattendee")
     public ResponseEntity<Attendee> addAttendee(@RequestBody @Valid Attendee attendee){
-        System.out.println(attendee.getEventid());
+        System.out.println("Processing attendee registration: " + attendee.getEmail() + " for event: " + attendee.getEventid());
 
-
+        // Save the attendee first
         Attendee savedAttendee = attendeeRepository.save(attendee);
-        System.out.println("saved attendee: " + savedAttendee.getEventid());
+        System.out.println("Saved attendee: " + savedAttendee.getEventid());
+
+        // Find the user ID from admin table using email
+        admin user = adminRepository.findByEmail(attendee.getEmail()).orElse(null);
+        if (user != null) {
+            System.out.println("Found user: " + user.getId() + ", calling CalculateMembership procedure");
+            // Convert Long to Integer since the stored procedure expects INT parameters
+            Integer mappingId = savedAttendee.getId().intValue();
+            Integer userId = user.getId().intValue();
+            Integer eventId = attendee.getEventid().intValue();
+            
+            try {
+                System.out.println("Calling procedure with mappingId=" + mappingId + ", userId=" + userId + ", eventId=" + eventId);
+                attendeeRepository.calculateMembership(mappingId, userId, eventId);
+                System.out.println("CalculateMembership procedure call completed successfully");
+            } catch (Exception e) {
+                System.err.println("Error calling CalculateMembership procedure: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("No user found with email: " + attendee.getEmail());
+        }
+
+        // Fetch the updated attendee with membership
+        Optional<Attendee> updatedAttendee = attendeeRepository.findById(savedAttendee.getId());
+        System.out.println("Updated membership: " + (updatedAttendee.isPresent() ? updatedAttendee.get().getMembership() : "Not set"));
+
         return ResponseEntity.ok(savedAttendee);
     }
 
