@@ -51,3 +51,17 @@ BEGIN
 END //
 
 DELIMITER ;
+
+
+
+
+DELIMITER //
+
+CREATE TRIGGER membership_after_attendee_insert
+AFTER INSERT ON attendee
+FOR EACH ROW
+BEGIN
+    CALL CalculateMembership(NEW.id, NEW.eventid);
+END //
+
+DELIMITER ;
