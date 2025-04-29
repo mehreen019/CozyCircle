@@ -178,3 +178,61 @@
       width: 100%;
     }
   }
+  /* Recommended section */
+.recommended-section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.recommended-section h2 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.recommended-grid .event-card {
+  background: white;
+  border: 2px solid #3498db;
+}
+
+.no-recommendations {
+  color: #7f8c8d;
+  padding: 1rem;
+  text-align: center;
+}
+/* ExploreEvents.css */
+.recommended-carousel {
+  padding: 0 20px;
+}
+
+.recommended-carousel .slick-list {
+  padding: 20px 0;
+}
+
+.recommended-carousel .slick-prev,
+.recommended-carousel .slick-next {
+  width: 40px;
+  height: 40px;
+  z-index: 1;
+}
+
+.recommended-carousel .slick-prev:before,
+.recommended-carousel .slick-next:before {
+  color: #3498db;
+  font-size: 40px;
+}
+
+.recommended-carousel .slick-dots li button:before {
+  font-size: 12px;
+}
+
+.carousel-item {
+  padding: 0 10px;
+}
+
+/* Make cards same height in carousel */
+.recommended-carousel .event-card {
+  height: 100%;
+  margin: 0 10px;
+}

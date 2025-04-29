@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css'; // Fix typo here (sick → slick)
 import { getAllEvents, addAttendee, filterEvents, getRegisteredEvents, unregisterUser } from '../helpers/api_communicator';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
@@ -9,11 +11,38 @@ import 'react-toastify/dist/ReactToastify.css';
 import FilterPanel from './FilterPanel';
 import '../styles/ExploreEvents.css';
 
+
+
+const carouselSettings = {
+  dots: true,
+  infinite: false,
+  speed: 500,
+  slidesToShow: 3,
+  slidesToScroll: 1,
+  responsive: [
+    {
+      breakpoint: 1024,
+      settings: {
+        slidesToShow: 2,
+        slidesToScroll: 1,
+      }
+    },
+    {
+      breakpoint: 768,
+      settings: {
+        slidesToShow: 1,
+        slidesToScroll: 1
+      }
+    }
+  ]
+};
 const ExploreEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reset, setReset] = useState(false);
   const [registeredEventIds, setRegisteredEventIds] = useState([]);
+const [recommendedEvents, setRecommendedEvents] = useState([]);
+const [recommendedLoading, setRecommendedLoading] = useState(true);
   const [filters, setFilters] = useState({
     name: '',
     city: '',
@@ -47,7 +76,39 @@ const ExploreEvents = () => {
       fetchRegisteredEvents();
     }
   }, [auth?.user?.email]); // Only depend on the user's email
-
+   // Fetch recommended events
+   useEffect(() => {
+    const fetchRecommendedEvents = async () => {
+      if (!auth?.user?.username) return;
+      
+      try {
+        console.log(auth.user.username);
+        const response = await fetch(
+          `http://localhost:8081/events/recommended?username=${auth.user.username}`
+        );
+        
+        // First check if response is OK
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Parse the JSON data from the response
+        const data = await response.json();
+        console.log("Parsed data:", data);
+        
+        // Now format the events
+        setRecommendedEvents(formatEvents(data));
+        
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        toast.error('Failed to load recommendations');
+      } finally {
+        setRecommendedLoading(false);
+      }
+    };
+  
+    fetchRecommendedEvents();
+  }, [auth?.user?.username]);
   // Function to fetch events based on the applied filters
   const fetchEvents = async () => {
     setLoading(true);
@@ -224,6 +285,35 @@ const ExploreEvents = () => {
           onResetFilters={handleResetFilters}
         />
         
+        {/* Replace the ENTIRE recommended-section div with this */}
+<div className="recommended-section">
+  <h2>Recommended For You</h2>
+  {recommendedLoading ? (
+    <div className="loading">Loading recommendations...</div>
+  ) : recommendedEvents.length > 0 ? (
+    <Slider {...carouselSettings} className="recommended-carousel">
+      {recommendedEvents.map(event => (
+        <div key={event.id} className="carousel-item">
+          <div className="event-card recommended-card">
+            {/* Keep your existing card content below */}
+            <h3 className="event-name">{event.name}</h3>
+            <div className="event-location">
+              {event.city}, {event.country}
+            </div>
+            <div className="event-date">
+              {format(new Date(event.date), 'MMMM dd, yyyy')}
+            </div>
+            {/* ... rest of your card content ... */}
+          </div>
+        </div>
+      ))}
+    </Slider>
+  ) : (
+    <div className="no-recommendations">
+      No recommendations yet. Rate more events to get personalized suggestions!
+    </div>
+  )}
+</div>
         <div className="events-grid">
           {loading ? (
             <div className="loading">Loading events...</div>

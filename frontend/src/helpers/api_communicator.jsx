@@ -142,6 +142,7 @@ export const getAllEvents = async () => {
   const data = await res.data;
   return data;
 };
+ 
 
 export const loginUser = async (username, password) => {
     

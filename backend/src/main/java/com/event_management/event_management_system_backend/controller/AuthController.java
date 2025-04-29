@@ -500,6 +500,7 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
 
     @GetMapping("/events/recommended")
      public ResponseEntity<List<Event>> getRecommendedEvents(@RequestParam String username) {
+        System.out.println(username+"reached");
     List<Event> recommendedEvents = eventRatingService.recommendEvents(username);
     return ResponseEntity.ok(recommendedEvents);
 }
