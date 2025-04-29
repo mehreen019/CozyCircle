@@ -16,4 +16,5 @@ public class AdminDto {
     private String username;
     private String token;
     private String email;
+    private Double score;
 }

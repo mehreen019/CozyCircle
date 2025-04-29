@@ -30,6 +30,7 @@ const ExploreEvents = () => {
   const navigate = useNavigate();
   const auth = useAuth();
 
+  // First useEffect to handle navigation and initial event fetch
   useEffect(() => {
     if (!auth?.user) {
       navigate('/login');
@@ -37,31 +38,27 @@ const ExploreEvents = () => {
       // Initial load
       fetchEvents();
       setReset(false); // Reset the reset state after fetching events
-
-      if(registeredEventIds.length === 0) {
-        // Fetch registered events if not already fetched
-        fetchRegisteredEvents();
-      }
     }
-  }, [auth, navigate, reset, registeredEventIds]);
+  }, [auth, navigate, reset]); // Removed registeredEventIds from dependencies
+
+  // Second useEffect to handle registered events fetch
+  useEffect(() => {
+    if (auth?.user) {
+      fetchRegisteredEvents();
+    }
+  }, [auth?.user?.email]); // Only depend on the user's email
 
   // Function to fetch events based on the applied filters
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      // If a search term is provided, use the search endpoint
-      /*if (filters.searchTerm && filters.searchTerm.trim() !== '') {
-        const response = await searchEvents(filters.searchTerm);
-        setEvents(formatEvents(response));
-      } else {*/
-        // Otherwise use the filter endpoint with the current filter state 
-        const filterParams = prepareFilterParams();
+      // Otherwise use the filter endpoint with the current filter state 
+      const filterParams = prepareFilterParams();
 
-        console.log("Filtered parameters:", filterParams);
-        const response = await filterEvents(filterParams);
-        console.log("Filtered events:", response);
-        setEvents(formatEvents(response));
-      //}
+      console.log("Filtered parameters:", filterParams);
+      const response = await filterEvents(filterParams);
+      console.log("Filtered events:", response);
+      setEvents(formatEvents(response));
     } catch (error) {
       console.error('Error fetching events:', error);
       // Fallback to getAllEvents if the filter/search API fails

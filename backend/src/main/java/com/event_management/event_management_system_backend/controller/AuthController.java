@@ -7,6 +7,7 @@ import com.event_management.event_management_system_backend.mapper.EventMapper;
 import com.event_management.event_management_system_backend.model.Attendee;
 import com.event_management.event_management_system_backend.model.Event;
 import com.event_management.event_management_system_backend.model.EventRating;
+import com.event_management.event_management_system_backend.model.admin;
 import com.event_management.event_management_system_backend.repositories.AdminRepository;
 import com.event_management.event_management_system_backend.repositories.AttendeeRepository;
 import com.event_management.event_management_system_backend.repositories.EventRatingRepository;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 @RequiredArgsConstructor
 @RestController
@@ -193,11 +195,37 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
 
     @PostMapping("/addattendee")
     public ResponseEntity<Attendee> addAttendee(@RequestBody @Valid Attendee attendee){
-        System.out.println(attendee.getEventid());
+        System.out.println("Processing attendee registration: " + attendee.getEmail() + " for event: " + attendee.getEventid());
 
-
+        // Save the attendee first
         Attendee savedAttendee = attendeeRepository.save(attendee);
-        System.out.println("saved attendee: " + savedAttendee.getEventid());
+        System.out.println("Saved attendee: " + savedAttendee.getEventid());
+
+        // Find the user ID from admin table using email
+        admin user = adminRepository.findByEmail(attendee.getEmail()).orElse(null);
+        if (user != null) {
+            System.out.println("Found user: " + user.getId() + ", calling CalculateMembership procedure");
+            // Convert Long to Integer since the stored procedure expects INT parameters
+            Integer mappingId = savedAttendee.getId().intValue();
+            Integer userId = user.getId().intValue();
+            Integer eventId = attendee.getEventid().intValue();
+            
+            try {
+                System.out.println("Calling procedure with mappingId=" + mappingId + ", userId=" + userId + ", eventId=" + eventId);
+                attendeeRepository.calculateMembership(mappingId, userId, eventId);
+                System.out.println("CalculateMembership procedure call completed successfully");
+            } catch (Exception e) {
+                System.err.println("Error calling CalculateMembership procedure: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("No user found with email: " + attendee.getEmail());
+        }
+
+        // Fetch the updated attendee with membership
+        Optional<Attendee> updatedAttendee = attendeeRepository.findById(savedAttendee.getId());
+        System.out.println("Updated membership: " + (updatedAttendee.isPresent() ? updatedAttendee.get().getMembership() : "Not set"));
+
         return ResponseEntity.ok(savedAttendee);
     }
 
@@ -345,6 +373,7 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
             return ResponseEntity.ok(0.0); // Return 0 if no rating exists
         }
     }
+
     /// a api for the rollup
     
     @GetMapping("/events/category/count")
@@ -352,4 +381,120 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
     List<CategoryCountDto> categoryCount = eventService.getEventCategoryCountForUser(username);
     return ResponseEntity.ok(categoryCount);
      }
+
+
+    @GetMapping("/user/score")
+    public ResponseEntity<?> getUserScore(@RequestParam String email) {
+        System.out.println("Getting user score for email: " + email);
+        
+        Optional<admin> user = adminRepository.findByEmail(email);
+        if (!user.isPresent()) {
+            return ResponseEntity.badRequest().body("User not found with email: " + email);
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("score", user.get().getScore());
+        response.put("userId", user.get().getId());
+        response.put("username", user.get().getUsername());
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/user/memberships")
+    public ResponseEntity<?> getUserMemberships(@RequestParam String email) {
+        System.out.println("Getting memberships for user email: " + email);
+        
+        List<Attendee> attendeeRecords = attendeeRepository.findByEmail(email);
+        
+        if (attendeeRecords.isEmpty()) {
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+        
+        List<Map<String, Object>> membershipDetails = new ArrayList<>();
+        
+        for (Attendee attendee : attendeeRecords) {
+            Map<String, Object> details = new HashMap<>();
+            details.put("attendeeId", attendee.getId());
+            details.put("eventId", attendee.getEventid());
+            details.put("membership", attendee.getMembership());
+            
+            // Get event name if needed
+            Optional<Event> event = eventRepository.findById(attendee.getEventid());
+            if (event.isPresent()) {
+                details.put("eventName", event.get().getName());
+            }
+            
+            membershipDetails.add(details);
+        }
+        
+        return ResponseEntity.ok(membershipDetails);
+    }
+    
+    @GetMapping("/users/leaderboard")
+    public ResponseEntity<List<Map<String, Object>>> getUserLeaderboard() {
+        System.out.println("Fetching user score leaderboard");
+        
+        List<admin> allUsers = adminRepository.findAll();
+        
+        // Sort users by score in descending order
+        allUsers.sort((a, b) -> b.getScore().compareTo(a.getScore()));
+        
+        List<Map<String, Object>> leaderboard = new ArrayList<>();
+        int rank = 1;
+        
+        for (admin user : allUsers) {
+            Map<String, Object> userRanking = new HashMap<>();
+            userRanking.put("rank", rank);
+            userRanking.put("userId", user.getId());
+            userRanking.put("username", user.getUsername());
+            userRanking.put("name", user.getName());
+            userRanking.put("score", user.getScore());
+            
+            leaderboard.add(userRanking);
+            rank++;
+        }
+        
+        return ResponseEntity.ok(leaderboard);
+    }
+    
+    @GetMapping("/user/stats")
+    public ResponseEntity<?> getUserStats(@RequestParam String email) {
+        System.out.println("Getting activity statistics for user email: " + email);
+        
+        Optional<admin> userOptional = adminRepository.findByEmail(email);
+        if (!userOptional.isPresent()) {
+            return ResponseEntity.badRequest().body("User not found with email: " + email);
+        }
+        
+        admin user = userOptional.get();
+        Map<String, Object> stats = new HashMap<>();
+        
+        // Get events created by this user
+        List<Event> createdEvents = eventRepository.findByUsername(user.getUsername());
+        stats.put("eventsCreated", createdEvents.size());
+        
+        // Get events attended by this user
+        List<Attendee> attendedEvents = attendeeRepository.findByEmail(email);
+        stats.put("eventsAttended", attendedEvents.size());
+        
+        // Get number of ratings provided by this user
+        long ratingsCount = eventRatingRepository.countByUserId(user.getId().longValue());
+        stats.put("ratingsProvided", ratingsCount);
+        
+        // Get user's current score and add it to stats
+        stats.put("score", user.getScore());
+        
+        // Get membership distribution
+        Map<String, Integer> membershipCounts = new HashMap<>();
+        for (Attendee attendee : attendedEvents) {
+            String membership = attendee.getMembership();
+            if (membership != null) {
+                membershipCounts.put(membership, membershipCounts.getOrDefault(membership, 0) + 1);
+            }
+        }
+        stats.put("membershipDistribution", membershipCounts);
+        
+        return ResponseEntity.ok(stats);
+    }
+
 }

@@ -195,6 +195,18 @@ const Dashboard = () => {
           text="View Analytics"
           textColor="white"
         />
+        <NavigationLink
+          bg="#AE9D99"
+          to="/profile"
+          text="My Profile"
+          textColor="black"
+        />
+        <NavigationLink
+          bg="#8A7B77"
+          to="/leaderboard"
+          text="Leaderboard"
+          textColor="white"
+        />
       </div>
       
       {error && (
