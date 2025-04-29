@@ -128,7 +128,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> searchEvents(@Param("searchTerm") String searchTerm);
 
 
-
+      /// query using rollup
     @Query(value = "SELECT e.category, COUNT(*) AS eventCount " +
        "FROM event e " +  // Note: lowercase "event" instead of "Event"
        "WHERE e.username = :username " +
@@ -151,5 +151,36 @@ List<Event> findRecommendedEventsByCategoriesAndUser(
 @Query(value = "SELECT e.* FROM event e " +
 "ORDER BY e.average_rating DESC LIMIT 10", nativeQuery = true)
 List<Event> findTopRatedEvents();
+
+/// query using cube 
+@Query(value = """
+        SELECT category, place, COUNT(*) AS eventCount
+        FROM event
+        WHERE username = :username
+        GROUP BY category, place
+    
+        UNION ALL
+    
+        SELECT category, NULL AS place, COUNT(*) AS eventCount
+        FROM event
+        WHERE username = :username
+        GROUP BY category
+    
+        UNION ALL
+    
+        SELECT NULL AS category, place, COUNT(*) AS eventCount
+        FROM event
+        WHERE username = :username
+        GROUP BY place
+    
+        UNION ALL
+    
+        SELECT NULL AS category, NULL AS place, COUNT(*) AS eventCount
+        FROM event
+        WHERE username = :username
+        """, nativeQuery = true)
+    List<Object[]> getEventCategoryPlaceCountWithCube(@Param("username") String username);
+    
+
 
 }

@@ -383,6 +383,12 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
     return ResponseEntity.ok(categoryCount);
      }
 
+     @GetMapping("/events/place")
+     public ResponseEntity<List<EventSummaryDto>> getEventPlace(@RequestParam String username) {
+        List<EventSummaryDto> placeCount = eventService.getEventSummary(username);
+        return ResponseEntity.ok(placeCount);
+     }
+
 
     @GetMapping("/user/score")
     public ResponseEntity<?> getUserScore(@RequestParam String email) {
