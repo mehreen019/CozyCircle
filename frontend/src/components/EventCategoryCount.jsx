@@ -58,35 +58,25 @@ const EventCategoryCount = () => {
         
         // Process location data
         if (Array.isArray(locationData)) {
-          // Count occurrences of each category-place combination
-          const countMap = new Map();
-          
-          locationData.forEach(item => {
-            const key = `${item?.category ?? 'null'}-${item?.place ?? 'null'}`;
-            countMap.set(key, (countMap.get(key) || 0) + 1);
-          });
+          // Convert to array format with proper null/empty string handling
+          const processedData = locationData.map(item => ({
+            category: item?.category ?? 'null',
+            location: item?.place === '' ? 'null' : (item?.place ?? 'null'),
+            count: item?.eventCount ?? 0
+          }));
 
-          // Convert to array format
-          const processedData = Array.from(countMap.entries()).map(([key, count]) => {
-            const [category, place] = key.split('-');
-            return {
-              category,
-              location: place,
-              count
-            };
+          // Sort by count (ascending), then category, then location
+          processedData.sort((a, b) => {
+            if (a.count !== b.count) {
+              return a.count - b.count; // Sort by count in ascending order
+            }
+            if (a.category === b.category) {
+              return a.location.localeCompare(b.location);
+            }
+            return a.category.localeCompare(b.location);
           });
-
-          // Calculate total count
-          const totalCount = processedData.reduce((sum, item) => sum + item.count, 0);
           
-          // Add total row
-          const processedLocationData = [...processedData, {
-            category: 'Total',
-            location: 'All',
-            count: totalCount
-          }];
-          
-          setLocationData(processedLocationData);
+          setLocationData(processedData);
         }
       } catch (error) {
         console.error("Fetch error:", error);
