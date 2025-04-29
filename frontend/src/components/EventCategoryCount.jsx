@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../context/AuthContext";
+import { FaExclamationCircle, FaSpinner } from 'react-icons/fa'; // Importing icons
 
 const EventCategoryCount = () => {
   const { user } = useAuth();
   const [categoryData, setCategoryData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
-
+  
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
   useEffect(() => {
     if (!user?.username) {
       setIsLoading(false);
@@ -26,7 +35,6 @@ const EventCategoryCount = () => {
         
         const data = await response.json();
         
-        // Process data to remove duplicates
         const processedData = [];
         const categories = new Set();
         
@@ -51,107 +59,99 @@ const EventCategoryCount = () => {
     fetchData();
   }, [user?.username]);
 
-  // These are the critical CSS properties that prevent the white screen
-  const criticalStyles = {
-    position: 'relative',
-    zIndex: 50,
-    display: 'block',
-    opacity: 1,
-    overflow: 'visible'
-  };
-
-  // Professional-looking container styles
   const containerStyles = {
-    ...criticalStyles,
-    backgroundColor: '#ffffff',
-    borderRadius: '8px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)',
-    padding: '24px',
-    margin: '16px 0',
+    background: '#f0f4f8',
+    borderRadius: '12px',
+    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+    padding: '32px',
+    margin: '20px 0',
     fontFamily: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    color: '#333333',
+    color: '#333',
     maxWidth: '100%',
-    width: '100%'
+    width: '100%',
+    transition: 'transform 0.3s',
   };
 
-  // Header styles
   const headerStyles = {
     color: '#2d3748',
-    fontSize: '18px',
-    fontWeight: '600',
-    marginBottom: '16px',
-    borderBottom: '1px solid #edf2f7',
-    paddingBottom: '12px'
+    fontSize: '28px',
+    fontWeight: '700',
+    marginBottom: '20px',
+    textAlign: 'center',
+    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
   };
 
-  // Loading indicator styles
   const loadingStyles = {
     padding: '16px 0',
     color: '#718096',
-    fontSize: '14px',
+    fontSize: '16px',
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'center',
   };
 
-  // Error message styles
   const errorStyles = {
     padding: '12px',
     backgroundColor: '#fff5f5',
     color: '#e53e3e',
     borderRadius: '4px',
-    fontSize: '14px',
-    marginBottom: '8px'
+    fontSize: '16px',
+    marginBottom: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   };
 
-  // Empty state styles
   const emptyStyles = {
     padding: '16px 0',
     color: '#718096',
-    fontSize: '14px',
-    fontStyle: 'italic'
+    fontSize: '16px',
+    fontStyle: 'italic',
+    textAlign: 'center',
   };
 
-  // Item container styles
   const itemContainerStyles = {
-    marginTop: '8px'
+    marginTop: '16px',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+    gap: '16px',
   };
 
-  // Individual item styles
   const itemStyles = {
     display: 'flex',
     justifyContent: 'space-between',
-    padding: '12px 16px',
-    borderBottom: '1px solid #edf2f7',
-    transition: 'background-color 0.2s',
-    borderRadius: '4px'
+    padding: '16px',
+    borderRadius: '12px',
+    backgroundColor: '#ffffff',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+    cursor: 'pointer',
   };
 
-  // Item hover effect - note: this won't work with inline styles but keeping for reference
   const itemHoverStyles = {
-    backgroundColor: '#f7fafc'
+    transform: 'scale(1.05)',
+    boxShadow: '0 8px 16px rgba(0, 0, 0, 0  2)',
   };
 
-  // Category name styles
   const categoryStyles = {
     color: '#4a5568',
-    fontSize: '15px'
+    fontSize: '18px',
+    fontWeight: '600',
   };
 
-  // Count styles
   const countStyles = {
     fontWeight: '600',
     color: '#3182ce',
     backgroundColor: '#ebf8ff',
-    padding: '2px 8px',
+    padding: '4px 10px',
     borderRadius: '12px',
-    fontSize: '14px'
+    fontSize: '16px',
   };
 
-  // Total count specific styles - for highlighting the total
   const totalCountStyles = {
     ...countStyles,
     backgroundColor: '#c6f6d5',
-    color: '#38a169'
+    color: '#38a169',
   };
 
   return (
@@ -160,21 +160,15 @@ const EventCategoryCount = () => {
       
       {isLoading && (
         <div style={loadingStyles}>
-          <div style={{marginRight: '8px'}}>Loading categories</div>
-          <div style={{
-            width: '16px',
-            height: '16px',
-            border: '2px solid #cbd5e0',
-            borderTopColor: '#3182ce',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
+          <FaSpinner className="spin" style={{ marginRight: '8px', fontSize: '20px' }} />
+          <div>Loading categories...</div>
         </div>
       )}
       
       {!isLoading && errorMessage && (
         <div style={errorStyles}>
-          <span style={{fontWeight: '500'}}>Error:</span> {errorMessage}
+          <FaExclamationCircle style={{ marginRight: '8px' }} />
+          <span>Error: {errorMessage}</span>
         </div>
       )}
       
@@ -185,7 +179,22 @@ const EventCategoryCount = () => {
       {!isLoading && !errorMessage && categoryData.length > 0 && (
         <div style={itemContainerStyles}>
           {categoryData.map((item, index) => (
-            <div key={index} style={itemStyles}>
+            <div 
+              key={index} 
+              style={{ 
+                ...itemStyles, 
+                ...(item.category === 'Total' ? totalCountStyles : {}), 
+                ':hover': itemHoverStyles 
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = itemHoverStyles.transform;
+                e.currentTarget.style.boxShadow = itemHoverStyles.boxShadow;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+              }}
+            >
               <span style={categoryStyles}>
                 {item.category}
               </span>
@@ -201,6 +210,9 @@ const EventCategoryCount = () => {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        .spin {
+          animation: spin 1s linear infinite;
         }
       `}</style>
     </div>

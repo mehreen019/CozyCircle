@@ -42,6 +42,7 @@ public class AuthController {
     private final UserAuthenticationProvider userAuthenticationProvider;
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
+    private final  EventRatingService eventRatingService;
     private final AttendeeMapper attendeeMapper;
     private final AttendeeRepository attendeeRepository;
     private final EventRatingRepository eventRatingRepository;
@@ -496,5 +497,11 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
         
         return ResponseEntity.ok(stats);
     }
+
+    @GetMapping("/events/recommended")
+     public ResponseEntity<List<Event>> getRecommendedEvents(@RequestParam String username) {
+    List<Event> recommendedEvents = eventRatingService.recommendEvents(username);
+    return ResponseEntity.ok(recommendedEvents);
+}
 
 }

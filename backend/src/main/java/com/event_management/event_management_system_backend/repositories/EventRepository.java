@@ -136,6 +136,20 @@ public interface EventRepository extends JpaRepository<Event, Long> {
        "WITH ROLLUP", 
        nativeQuery = true)
 List<Object[]> getEventCategoryCountWithRollup(@Param("username") String username);
+    
+@Query(value = "SELECT e.* FROM event e " +
+        "WHERE e.category IN :categories " +
+        "AND e.username != :username " +
+        "AND e.id NOT IN (" +
+        "  SELECT a.eventid FROM attendee a WHERE a.name = :username)",  // ✅ Fixed to `eventid`
+        nativeQuery = true)
+List<Event> findRecommendedEventsByCategoriesAndUser(
+        @Param("categories") List<String> categories,
+        @Param("username") String username
+);
+
+@Query(value = "SELECT e.* FROM event e " +
+"ORDER BY e.average_rating DESC LIMIT 10", nativeQuery = true)
+List<Event> findTopRatedEvents();
+
 }
-
-
