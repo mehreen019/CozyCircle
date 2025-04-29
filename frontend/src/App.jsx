@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import './App.css'
 import Login from './components/Login'
 import Signup from './components/Signup'
@@ -6,7 +5,6 @@ import NotFound from './components/NotFound'
 import Dashboard from './components/Dashboard'
 import { Home } from './components/Home'
 import { Route, Routes } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import Header from './components/Header'
 import AddEvent from './components/AddEvent'
@@ -19,6 +17,8 @@ import ExploreEvents from './components/ExploreEvents'
 import TotalRatingsPage from './components/dummy'
 import EventRankings from './components/EventRankings'
 import EventAnalytics from './components/EventAnalytics'
+import UserProfile from './components/UserProfile'
+import Leaderboard from './components/Leaderboard'
 
 function App() {
 
@@ -46,6 +46,10 @@ function App() {
         {/* New routes for event rankings and analytics */}
         <Route path="/events/rankings" element={<EventRankings/>} />
         <Route path="/events/analytics" element={<EventAnalytics/>} />
+        
+        {/* New routes for user profile and leaderboard */}
+        <Route path="/profile" element={<UserProfile/>} />
+        <Route path="/leaderboard" element={<Leaderboard/>} />
       </Routes>
     </main>
   )
