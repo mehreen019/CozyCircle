@@ -1,37 +1,30 @@
 DELIMITER //
 
-CREATE PROCEDURE CalculateMembership(IN p_user_id BIGINT, IN p_event_id BIGINT)
+CREATE PROCEDURE CalculateMembership(IN p_user_id INT, IN p_event_id INT)
 BEGIN
-    -- Declare variables
-    DECLARE user_score INT;
-    DECLARE membership_level VARCHAR(10);
-    DECLARE user_rank INT;
+    DECLARE user_score DOUBLE;
     DECLARE total_users INT;
+    DECLARE user_rank INT;
     DECLARE percentile DECIMAL(10,2);
-    
-    -- Get total number of attendees for the event
-    SELECT COUNT(*) INTO total_users FROM attendee WHERE eventid = p_event_id;
-    
-    -- Calculate user's score based on previous events attended and ratings given
-    -- This is a simplified example - you might want to customize this based on your scoring criteria
-    SELECT COUNT(a.id) INTO user_score 
-    FROM attendee a 
-    WHERE a.email = (SELECT email FROM attendee WHERE id = p_user_id);
-    
-    -- Calculate user's rank among all attendees
-    SELECT COUNT(*) + 1 INTO user_rank
-    FROM attendee a1
-    JOIN (
-        SELECT a2.email, COUNT(a2.id) as score
-        FROM attendee a2
-        GROUP BY a2.email
-    ) scores ON a1.email = scores.email
-    WHERE scores.score > user_score
-    AND a1.eventid = p_event_id;
-    
+    DECLARE membership_level VARCHAR(10);
+
+    -- Get the user's score from the admin table
+    SELECT score INTO user_score FROM admin WHERE id = p_user_id;
+
+    -- Get the total number of users
+    SELECT COUNT(*) INTO total_users FROM admin;
+
+    -- Calculate the user's rank using RANK()
+    SELECT user_rank INTO user_rank
+    FROM (
+        SELECT id, RANK() OVER (ORDER BY score DESC) AS user_rank
+        FROM admin
+    ) ranked_users
+    WHERE id = p_user_id;
+
     -- Calculate percentile
     SET percentile = (user_rank / total_users) * 100;
-    
+
     -- Determine membership level based on percentile
     IF percentile <= 25 THEN
         SET membership_level = 'PLATINUM';
@@ -42,26 +35,11 @@ BEGIN
     ELSE
         SET membership_level = 'BRONZE';
     END IF;
-    
+
     -- Update the attendee record with membership level
     UPDATE attendee 
     SET membership = membership_level
     WHERE id = p_user_id AND eventid = p_event_id;
-    
-END //
-
-DELIMITER ;
-
-
-
-
-DELIMITER //
-
-CREATE TRIGGER membership_after_attendee_insert
-AFTER INSERT ON attendee
-FOR EACH ROW
-BEGIN
-    CALL CalculateMembership(NEW.id, NEW.eventid);
 END //
 
 DELIMITER ;
