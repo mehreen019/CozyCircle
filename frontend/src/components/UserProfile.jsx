@@ -10,6 +10,8 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedMembership, setSelectedMembership] = useState(null);
+  const [showInvite, setShowInvite] = useState(false);
 
   const navigate = useNavigate();
   const auth = useAuth();
@@ -55,6 +57,174 @@ const UserProfile = () => {
       case 'BRONZE': return '#CD7F32';
       default: return '#6c757d';
     }
+  };
+
+  const getMembershipBackground = (membership) => {
+    switch (membership) {
+      case 'GOLD': return 'linear-gradient(135deg, #FFD700 0%, #FFC107 100%)';
+      case 'SILVER': return 'linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%)';
+      case 'BRONZE': return 'linear-gradient(135deg, #CD7F32 0%, #A0522D 100%)';
+      default: return 'linear-gradient(135deg, #6c757d 0%, #495057 100%)';
+    }
+  };
+
+  const handleViewInvite = (membership) => {
+    setSelectedMembership(membership);
+    setShowInvite(true);
+  };
+
+  const closeInviteModal = () => {
+    setShowInvite(false);
+    setSelectedMembership(null);
+  };
+
+  // Render invite card modal
+  const renderInviteModal = () => {
+    if (!selectedMembership) return null;
+    
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000
+      }}>
+        <div style={{
+          width: '350px',
+          height: '550px',
+          background: getMembershipBackground(selectedMembership.membership),
+          borderRadius: '15px',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <button 
+            onClick={closeInviteModal}
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'rgba(255,255,255,0.3)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '30px',
+              height: '30px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: 'bold'
+            }}
+          >
+            ✕
+          </button>
+          
+          {/* Top decoration */}
+          <div style={{
+            height: '100px',
+            background: 'rgba(255,255,255,0.1)',
+            borderBottomLeftRadius: '100%',
+            borderBottomRightRadius: '100%',
+            marginBottom: '20px'
+          }}></div>
+          
+          {/* Logo/Icon */}
+          <div style={{
+            width: '80px',
+            height: '80px',
+            borderRadius: '50%',
+            background: 'white',
+            margin: '-50px auto 10px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: '40px',
+            fontWeight: 'bold',
+            boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
+            color: selectedMembership.membership === 'GOLD' ? '#FFD700' : 
+                  selectedMembership.membership === 'SILVER' ? '#C0C0C0' :
+                  selectedMembership.membership === 'BRONZE' ? '#CD7F32' : '#6c757d'
+          }}>
+            {selectedMembership.membership.charAt(0)}
+          </div>
+          
+          {/* Event Title */}
+          <h2 style={{
+            textAlign: 'center',
+            color: selectedMembership.membership === 'GOLD' || selectedMembership.membership === 'SILVER' ? 'black' : 'white',
+            margin: '10px 0 5px',
+            padding: '0 15px',
+            fontSize: '24px'
+          }}>
+            {selectedMembership.eventName || `Event #${selectedMembership.eventId}`}
+          </h2>
+          
+          {/* Membership Level */}
+          <div style={{
+            textAlign: 'center',
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            margin: '10px auto',
+            padding: '5px 20px',
+            borderRadius: '20px',
+            width: 'fit-content',
+            fontWeight: 'bold',
+            color: selectedMembership.membership === 'GOLD' || selectedMembership.membership === 'SILVER' ? 'black' : 'white'
+          }}>
+            {selectedMembership.membership} MEMBER
+          </div>
+          
+          {/* User Info Section */}
+          <div style={{
+            margin: '20px 30px',
+            backgroundColor: 'rgba(255,255,255,0.15)',
+            padding: '20px',
+            borderRadius: '10px',
+            color: selectedMembership.membership === 'GOLD' || selectedMembership.membership === 'SILVER' ? 'black' : 'white'
+          }}>
+            <p style={{ margin: '5px 0', fontSize: '16px' }}>
+              <strong>Name:</strong> {auth.user?.name || auth.user?.username}
+            </p>
+            <p style={{ margin: '5px 0', fontSize: '16px' }}>
+              <strong>Username:</strong> {auth.user?.username}
+            </p>
+            <p style={{ margin: '5px 0', fontSize: '16px' }}>
+              <strong>Email:</strong> {auth.user?.email}
+            </p>
+          </div>
+          
+          {/* QR Code Placeholder */}
+          <div style={{
+            width: '150px',
+            height: '150px',
+            margin: '10px auto 20px',
+            backgroundColor: 'white',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: '10px',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{
+              fontSize: '12px',
+              textAlign: 'center',
+              color: '#555'
+            }}>
+              QR CODE<br/>
+              <span style={{ fontSize: '10px' }}>Scan for verification</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Render tabs UI
@@ -140,7 +310,7 @@ const UserProfile = () => {
     </div>
   );
 
-  // Render memberships tab
+  // Render memberships tab with added View Invite button
   const renderMemberships = () => (
     <div className="card">
       <div className="card-body">
@@ -154,6 +324,7 @@ const UserProfile = () => {
                 <tr>
                   <th>Event Name</th>
                   <th>Membership Level</th>
+                  <th>Invite</th>
                 </tr>
               </thead>
               <tbody>
@@ -170,6 +341,21 @@ const UserProfile = () => {
                       }}>
                         {membership.membership || 'BASIC'}
                       </span>
+                    </td>
+                    <td>
+                      <button 
+                        onClick={() => handleViewInvite(membership)}
+                        style={{
+                          backgroundColor: '#AE9D99',
+                          color: 'white',
+                          border: 'none',
+                          padding: '5px 10px',
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        View Invite
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -267,6 +453,8 @@ const UserProfile = () => {
         {activeTab === 'memberships' && renderMemberships()}
         {activeTab === 'stats' && renderStats()}
       </div>
+      
+      {showInvite && renderInviteModal()}
     </div>
   );
 };
