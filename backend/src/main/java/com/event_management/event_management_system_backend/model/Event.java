@@ -24,13 +24,16 @@ public class Event {
     private int capacity;
     private int total_ratings=0;
 
+    @Column(name = "time_category")
+    private String timeCategory;
+
     // @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     //private List<Attendee> attendees;
 
     public Event() {
     }
 
-    public Event(Long id, String name, String city, String country, String place, String description, Date date, String username, int capacity, int total_ratings, String category) {
+    public Event(Long id, String name, String city, String country, String place, String description, Date date, String username, int capacity, int total_ratings, String category, String timeCategory) {
         this.id = id;
         this.name = name;
         this.city = city;
@@ -43,6 +46,7 @@ public class Event {
         this.averageRating= 0;
         this.capacity= capacity;
         this.total_ratings=0;
+        this.timeCategory = timeCategory;
     }
 
     public String getUsername() {
@@ -142,5 +146,13 @@ public class Event {
 
     public void setTotal_ratings(int total_ratings) {
         this.total_ratings = total_ratings;
+    }
+
+    public String getTimeCategory() {
+        return timeCategory;
+    }
+
+    public void setTimeCategory(String timeCategory) {
+        this.timeCategory = timeCategory;
     }
 }

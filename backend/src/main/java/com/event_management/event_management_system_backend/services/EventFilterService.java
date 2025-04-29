@@ -26,6 +26,7 @@ public class EventFilterService {
                 filterDto.getName(),
                 filterDto.getCity(),
                 filterDto.getCountry(),
+                filterDto.getCategory(),
                 filterDto.getMinRating(),
                 filterDto.getMaxRating(),
                 filterDto.getStartDate(),

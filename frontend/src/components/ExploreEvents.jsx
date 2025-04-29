@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-import { getAllEvents, addAttendee, filterEvents, searchEvents } from '../helpers/api_communicator';
+import { getAllEvents, addAttendee, filterEvents, getRegisteredEvents, unregisterUser } from '../helpers/api_communicator';
 import { format } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -12,8 +12,10 @@ import '../styles/ExploreEvents.css';
 const ExploreEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reset, setReset] = useState(false);
+  const [registeredEventIds, setRegisteredEventIds] = useState([]);
   const [filters, setFilters] = useState({
-    searchTerm: '',
+    name: '',
     city: '',
     country: '',
     minRating: 0,
@@ -34,24 +36,32 @@ const ExploreEvents = () => {
     } else {
       // Initial load
       fetchEvents();
+      setReset(false); // Reset the reset state after fetching events
+
+      if(registeredEventIds.length === 0) {
+        // Fetch registered events if not already fetched
+        fetchRegisteredEvents();
+      }
     }
-  }, [auth, navigate]);
+  }, [auth, navigate, reset, registeredEventIds]);
 
   // Function to fetch events based on the applied filters
   const fetchEvents = async () => {
     setLoading(true);
     try {
       // If a search term is provided, use the search endpoint
-      if (filters.searchTerm && filters.searchTerm.trim() !== '') {
+      /*if (filters.searchTerm && filters.searchTerm.trim() !== '') {
         const response = await searchEvents(filters.searchTerm);
         setEvents(formatEvents(response));
-      } else {
+      } else {*/
         // Otherwise use the filter endpoint with the current filter state 
         const filterParams = prepareFilterParams();
+
+        console.log("Filtered parameters:", filterParams);
         const response = await filterEvents(filterParams);
         console.log("Filtered events:", response);
         setEvents(formatEvents(response));
-      }
+      //}
     } catch (error) {
       console.error('Error fetching events:', error);
       // Fallback to getAllEvents if the filter/search API fails
@@ -78,7 +88,7 @@ const ExploreEvents = () => {
   // Prepare filter parameters for the API
   const prepareFilterParams = () => {
     return {
-      searchTerm: filters.searchTerm,
+      name: filters.name,
       category: filters.category === 'All' ? null : filters.category,
       city: filters.city || null,
       country: filters.country || null,
@@ -104,8 +114,8 @@ const ExploreEvents = () => {
 
   // Reset filters to default
   const handleResetFilters = () => {
-    setFilters({
-      searchTerm: '',
+    const defaultFilters = {
+      name: '',
       city: '',
       country: '',
       minRating: 0,
@@ -116,11 +126,26 @@ const ExploreEvents = () => {
       maxCapacity: null,
       sortBy: 'rating',
       category: 'All'
-    });
-    
-    // After resetting filters, fetch all events again
-    fetchEvents();
+    };
+  
+    setFilters(defaultFilters);
+    setReset(!reset); // Trigger a re-render to reset filters
+
+    console.log("Filters reset to default values.", filters.name);
   };
+
+  const fetchRegisteredEvents = async () => {
+    try {
+      const response = await getRegisteredEvents(auth?.user.email);
+      const registeredIds = response.map(event => event.id); // Assuming API returns array of event objects
+      setRegisteredEventIds(registeredIds);
+      console.log("Registered event IDs:", registeredIds);
+    } catch (error) {
+      console.error('Error fetching registered events:', error);
+      toast.error('Failed to load registered events.');
+    }
+  };
+  
 
   const handleRegisterClick = async (event) => {
     if (!auth?.user) {
@@ -138,11 +163,38 @@ const ExploreEvents = () => {
       console.log(response);
 
       toast.success("Registered Successfully!", { autoClose: 3000 });
+
+      await fetchRegisteredEvents();
     } catch (error) {
       console.error(error);
       toast.error("Failed to register. Try again.");
     }
   };
+
+  const handleUnregisterClick = async (event) => {
+    if (!auth?.user) {
+      toast.error("You must be logged in to unregister.");
+      return;
+    }
+  
+    try {
+      toast.info("Unregistering...", { autoClose: 2000 });
+  
+      const response = await unregisterUser(event.id, auth.user.email);
+
+      console.log(response);
+  
+      if (response.status === 200) {
+        toast.success("Unregistered Successfully!", { autoClose: 3000 });
+        await fetchRegisteredEvents(); // Refresh the registered event IDs
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to unregister. Try again.");
+    }
+  };
+  
+  
 
   // Generate star rating display
   const renderStars = (rating) => {
@@ -210,12 +262,29 @@ const ExploreEvents = () => {
                   >
                     View
                   </Link>
-                  <button 
-                    className="register-btn"
-                    onClick={() => handleRegisterClick(event)}
-                  >
-                    Register
-                  </button>
+
+                  { auth?.user && auth?.user.username === event.username ? (
+                    <button 
+                      className="unregister-btn"
+                      disabled
+                    >
+                      Created
+                    </button>
+                  ) : registeredEventIds.includes(event.id) ? (
+                    <button 
+                      className="unregister-btn"
+                      onClick={() => handleUnregisterClick(event)}
+                    >
+                      Unregister
+                    </button>
+                  ) : (
+                    <button 
+                      className="register-btn"
+                      onClick={() => handleRegisterClick(event)}
+                    >
+                      Register
+                    </button>
+                  )}
                 </div>
               </div>
             ))
