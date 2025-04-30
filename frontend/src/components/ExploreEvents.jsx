@@ -394,11 +394,11 @@ const ExploreEvents = () => {
             >
               {showArchived ? 'Hide Archived Events' : 'Show Archived Events'}
             </button>
-            {auth?.user?.role === 'admin' && (
+           
               <button className="manual-archive-btn" onClick={handleManualArchive}>
                 Archive Old Events Now
               </button>
-            )}
+           
           </div>
         </div>
   
