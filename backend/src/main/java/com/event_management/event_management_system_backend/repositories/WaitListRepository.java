@@ -18,9 +18,6 @@ public interface WaitListRepository extends JpaRepository<WaitList, Long>  {
         // Find a specific waitlisted user by event and email
         Optional<WaitList> findByEventidAndEmail(Long eventid, String email);
 
-        // Get the first person in the waitlist for a specific event
-        Optional<WaitList> findFirstByEventidOrderByPositionAsc(Long eventid);
-
         // Count waitlisted users for a specific event
         long countByEventid(Long eventid);
 
@@ -33,4 +30,8 @@ public interface WaitListRepository extends JpaRepository<WaitList, Long>  {
         @Transactional
         @Query("UPDATE WaitList w SET w.position = w.position - 1 WHERE w.eventid = :eventid AND w.position > :position")
         void decrementPositionsAfter(@Param("eventid") Long eventid, @Param("position") Integer position);
+
+        Optional<WaitList> findFirstByEventidOrderByPositionAsc(Long eventId);
+        List<WaitList> findByEventidAndPositionGreaterThanOrderByPositionAsc(Long eventId, int position);
+
 }

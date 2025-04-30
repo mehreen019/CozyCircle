@@ -48,32 +48,34 @@ const ViewEvent = () => {
     }
   };
 
-  const handleUnregisterClick = async (event) => {
-      if (!auth?.user) {
-        toast.error("You must be logged in to unregister.");
-        return;
-      }
-    
-      try {
-        toast.info("Unregistering...", { autoClose: 2000 });
-    
-        const response = await unregisterUser(event.id, auth.user.email);
+  const handleUnregisterClick = async () => {
+    if (!auth?.user) {
+      toast.error("You must be logged in to unregister.");
+      return;
+    }
   
-        console.log(response);
-    
-        if (response.status === 200) {
-          toast.success("Unregistered Successfully!", { autoClose: 3000 });
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to unregister. Try again.");
-      }
-      finally{
-         navigate("/dashboard");
-      }
+    try {
 
-     
-  };
+      toast.loading("Unregistering...", { autoClose: 2000 });
+  
+      // Use prevEvent.id instead of event.id
+      const response = await unregisterUser(prevEvent.id, auth.user.email);
+
+      console.log(response);
+  
+      if (response.status === 200) {
+        toast.success("Unregistered Successfully!", { autoClose: 3000 });
+        // Navigate after successful unregistration
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1000);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to unregister. Try again.");
+    }
+};
+
   
 
 
@@ -125,10 +127,21 @@ const ViewEvent = () => {
               )
             : (
               <button
-                  style={{ backgroundColor: "#AE9D99", color: "black", border: "none", borderRadius: "4px", cursor: "pointer", padding: "8px 16px", textAlign: "center", fontWeight: "600", fontSize: "18px" }}
-                  onClick={handleUnregisterClick}
-                >
-                  Unregister
+                type="button" 
+                style={{
+                  backgroundColor: "#AE9D99",
+                  color: "black",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  padding: "8px 16px",
+                  textAlign: "center",
+                  fontWeight: "600",
+                  fontSize: "18px"
+                }}
+                onClick={handleUnregisterClick}
+              >
+                Unregister
               </button>
               )}
 

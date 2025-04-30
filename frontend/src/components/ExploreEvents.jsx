@@ -249,6 +249,7 @@ const ExploreEvents = () => {
       toast.error("Failed to register. Try again.");
     }
   };
+  
 
   const handleUnregisterClick = async (event) => {
     if (!auth?.user) {
@@ -413,7 +414,10 @@ const ExploreEvents = () => {
               {loading ? (
                 <div className="loading">Loading events...</div>
               ) : events?.length > 0 ? (
-                events.map(event => renderEventCard(event, false))
+                events
+                  .filter(event => !archivedEvents.some(archived => archived.id === event.id))
+                  .map(event => renderEventCard(event, false))
+
               ) : (
                 <div className="no-events">No events found matching your criteria.</div>
               )}
