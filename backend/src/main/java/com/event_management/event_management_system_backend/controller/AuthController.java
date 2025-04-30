@@ -357,7 +357,6 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
         System.out.println("Attempting to unregister email: " + email + " from event ID: " + eventId);
 
         Optional<Attendee> attendeeOptional = attendeeRepository.findByEventidAndEmail(eventId, email);
-
         if (!attendeeOptional.isPresent()) {
             return ResponseEntity.badRequest().body("User was not registered to this event");
         }
@@ -367,25 +366,41 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
             return ResponseEntity.badRequest().body("Event not found");
         }
 
-        Event event = eventOptional.get();
+        Attendee attendee = attendeeOptional.get();
+        attendeeRepository.delete(attendee);
 
-        // Delete the attendee
-        attendeeRepository.delete(attendeeOptional.get());
+        // Promote first waitlisted person if exists
+        /*Optional<WaitList> firstInQueue = waitlistRepository
+                .findFirstByEventidOrderByPositionAsc(eventId);
 
-        System.out.println("ATTEMPTING TO UNREGISTER PLEASE: " + eventId);
+        if (firstInQueue.isPresent()) {
+            WaitList person = firstInQueue.get();
+            Attendee newAttendee = new Attendee();
+            newAttendee.setEventid(eventId);
+            newAttendee.setName(person.getName());
+            newAttendee.setEmail(person.getEmail());
+            attendeeRepository.save(newAttendee);
 
-        // Try to promote someone from waitlist
-        boolean promoted = waitListService.promoteFromWaitlist(eventId);
+            waitlistRepository.deleteById(person.getId());
 
-        if (!promoted) {
-            // If no one was promoted, increase the capacity manually
+            // Shift remaining waitlist positions
+            List<WaitList> remaining = waitlistRepository
+                    .findByEventidAndPositionGreaterThanOrderByPositionAsc(eventId, person.getPosition());
+            for (WaitList w : remaining) {
+                w.setPosition(w.getPosition() - 1);
+            }
+            waitlistRepository.saveAll(remaining);
+
+        } else {*/
+            // No one to promote, so increase capacity
+            Event event = eventOptional.get();
             event.setCapacity(event.getCapacity() + 1);
             eventRepository.save(event);
-            return ResponseEntity.ok("Successfully unregistered from event.");
-        }
+        //}
 
-        return ResponseEntity.ok("Successfully unregistered from event. Someone from the waitlist has been registered.");
+        return ResponseEntity.ok("Successfully unregistered from event.");
     }
+
 
 
 
