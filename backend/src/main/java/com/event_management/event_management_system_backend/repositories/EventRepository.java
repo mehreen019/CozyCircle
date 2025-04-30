@@ -180,7 +180,59 @@ List<Event> findTopRatedEvents();
         WHERE username = :username
         """, nativeQuery = true)
     List<Object[]> getEventCategoryPlaceCountWithCube(@Param("username") String username);
-    
 
+    // Add these methods to the EventRepository interface
+
+    // Find non-archived events
+    List<Event> findByArchivedFalse();
+
+    // Find archived events
+    List<Event> findByArchivedTrue();
+
+    // Modify the existing query to consider archived status
+    @Query(value = "SELECT e.*, " +
+            "COUNT(a.id) as attendee_count, " +
+            "e.capacity - COUNT(a.id) as available_capacity, " +
+            "RANK() OVER (ORDER BY e.average_rating DESC) as rating_rank, " +
+            "RANK() OVER (ORDER BY COUNT(a.id) DESC) as attendee_rank, " +
+            "RANK() OVER (ORDER BY e.capacity DESC) as capacity_rank, " +
+            "RANK() OVER (ORDER BY (e.capacity - COUNT(a.id)) DESC) as available_capacity_rank " +
+            "FROM event e " +
+            "LEFT JOIN attendee a ON e.id = a.eventid " +
+            "WHERE (:name IS NULL OR LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+            "AND (:city IS NULL OR LOWER(e.city) LIKE LOWER(CONCAT('%', :city, '%'))) " +
+            "AND (:country IS NULL OR LOWER(e.country) LIKE LOWER(CONCAT('%', :country, '%'))) " +
+            "AND (:category IS NULL OR :category = 'All' OR LOWER(e.category) = LOWER(:category)) " +
+            "AND (:minRating IS NULL OR e.average_rating >= :minRating) " +
+            "AND (:maxRating IS NULL OR e.average_rating <= :maxRating) " +
+            "AND (:startDate IS NULL OR e.date >= :startDate) " +
+            "AND (:endDate IS NULL OR e.date <= :endDate) " +
+            "AND (:minCapacity IS NULL OR e.capacity >= :minCapacity) " +
+            "AND (:maxCapacity IS NULL OR e.capacity <= :maxCapacity) " +
+            "AND e.archived = :archived " +
+            "GROUP BY e.id " +
+            "HAVING (:minAvailableCapacity IS NULL OR (e.capacity - COUNT(a.id)) >= :minAvailableCapacity) " +
+            "ORDER BY " +
+            "CASE WHEN :sortBy = 'rating' THEN e.average_rating ELSE NULL END DESC, " +
+            "CASE WHEN :sortBy = 'date' THEN e.date ELSE NULL END ASC, " +
+            "CASE WHEN :sortBy = 'capacity' THEN e.capacity ELSE NULL END DESC, " +
+            "CASE WHEN :sortBy = 'name' THEN e.name ELSE NULL END ASC, " +
+            "e.average_rating DESC",
+            nativeQuery = true)
+    List<Map<String, Object>> findEventsWithFiltersAndArchiveStatus(
+            @Param("name") String name,
+            @Param("city") String city,
+            @Param("country") String country,
+            @Param("category") String category,
+            @Param("minRating") Double minRating,
+            @Param("maxRating") Double maxRating,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate,
+            @Param("minCapacity") Integer minCapacity,
+            @Param("maxCapacity") Integer maxCapacity,
+            @Param("minAvailableCapacity") Integer minAvailableCapacity,
+            @Param("sortBy") String sortBy,
+            @Param("archived") Boolean archived
+    );
 
 }

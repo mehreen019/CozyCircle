@@ -168,6 +168,93 @@
   .unregister-btn:hover {
     color: white;
   }
+
+  .archived-controls {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .archive-toggle-btn, 
+  .manual-archive-btn {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .archive-toggle-btn {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .archive-toggle-btn.active {
+    background-color: #495057;
+  }
+  
+  .manual-archive-btn {
+    background-color: #0d6efd;
+    color: white;
+  }
+  
+  .archive-toggle-btn:hover, 
+  .manual-archive-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Section title */
+  .section-title {
+    margin-bottom: 20px;
+    color: #343a40;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+    padding-bottom: 10px;
+  }
+  
+  /* Archived Event Card Styling */
+  .archived-grid {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  .event-card.archived {
+    position: relative;
+    background-color: #f1f1f1;
+    border: 1px solid #e0e0e0;
+    opacity: 0.9;
+  }
+  
+  .archived-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #dc3545;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  
+  .event-card.archived .event-name {
+    color: #6c757d;
+  }
+  
+  .events-content {
+    flex: 1;
+    margin-left: 20px;
+  }
   
   @media (max-width: 768px) {
     .explore-content {
