@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from "../context/AuthContext";
 import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
+import { Link } from 'react-router-dom';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import NavigationLink from './shared/NavigationLink';
+import {
+  Box,
+  Button
+} from '@mui/material';
 
 const EventCategoryCount = () => {
   const { user } = useAuth();
@@ -186,6 +193,19 @@ const EventCategoryCount = () => {
 
   return (
     <div style={containerStyles}>
+
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={4}>
+                <Link to="/events/analytics" style={{ textDecoration: 'none' }}>
+                  <Button startIcon={<ArrowBackIcon />} sx={{ color: '#6D5147' }}>
+                    Back to Analytics
+                  </Button>
+                </Link>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <NavigationLink to="/events/rankings" text="View Detailed Rankings" bg="#AE9D99" textColor="black" />
+                  <NavigationLink to="/events/organizer-rankings" text="View Organizer Ranking" bg="#AE9D99" textColor="black" />
+                </div>
+              </Box>
+
       <h2 style={headerStyles}>Event Category Counts</h2>
       
       {isLoading && (

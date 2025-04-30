@@ -15,6 +15,8 @@ import {
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend
 } from 'recharts';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import OrganizerRankings from './OrganizerRanking';
 
 const EventAnalytics = () => {
   const [rankings, setRankings] = useState([]);
@@ -73,6 +75,9 @@ const EventAnalytics = () => {
     available: '#C2B9B0'     // Light beige
   };
 
+  const location = useLocation();
+  const path = location.pathname;
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom color="black">
@@ -85,6 +90,7 @@ const EventAnalytics = () => {
           <Box display="flex" gap={2} flexWrap="wrap">
             <NavigationLink to="/events/rankings" text="View Detailed Rankings" bg="#6D5147" textColor="white" />
             <NavigationLink to="/events/category-counts" text="View Category Counts" bg="#AE9D99" textColor="black" />
+            <NavigationLink to="/events/organizer-rankings" text="Top Organizers" bg="#8D7B74" textColor="white" />
           </Box>
         </Grid>
 

@@ -8,10 +8,6 @@ const Menu = () => {
                 <Button variant="contained" color="primary" sx={{ bgcolor: '#6D5147', '&:hover': { bgcolor: '#AE9D99' } }}>Home</Button>
             </Link>
             <div style={{ margin: '0 10px' }}></div>
-            <Link to="/allEvents" style={{ textDecoration: 'none' }}>
-                <Button variant="contained" color="primary" sx={{ bgcolor: '#6D5147', '&:hover': { bgcolor: '#AE9D99' } }}>All Events</Button>
-            </Link>
-            <div style={{ margin: '0 10px' }}></div>
             <Link to="/dashboard" style={{ textDecoration: 'none' }}>
                 <Button variant="contained" color="primary" sx={{ bgcolor: '#6D5147', '&:hover': { bgcolor: '#AE9D99' } }}>Dashboard</Button>
             </Link>

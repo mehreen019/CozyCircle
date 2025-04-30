@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(HttpMethod.POST, "/login", "/register", "/addattendee","/events/rate","/addevent", "/count", "/events/ranked/ratings", "/events/ranked/attendees", "/events/ranked/capacity", "/events/ranked/available-capacity", "/events/ranked/all", "/events/filter", "/waitlist", "/events/archive-old").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/getevent","/getallevents", "/count", "/events/ranked/ratings", "/events/ranked/attendees", "/events/ranked/capacity", "/events/ranked/available-capacity", "/events/ranked/all", "events/search?*","/events/category/count", "/events/recommended","/events/place", "/events/archived", "/events/filter-archived").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/getevent","/getallevents", "/count", "/events/ranked/ratings", "/events/ranked/attendees", "/events/ranked/capacity", "/events/ranked/available-capacity", "/events/ranked/all", "events/search?*","/events/category/count", "/events/recommended","/events/place", "/events/archived", "/events/filter-archived", "/organizers/ratings").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/unregister").permitAll()
                         .anyRequest().authenticated())
         ;

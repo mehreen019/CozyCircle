@@ -80,7 +80,7 @@ export const getAttendees = async (route) => {
   return data;
 };
 
-export const addEvent = async (name, username, description, place, city, country, date,userId,rating,capacity, category) => {
+export const addEvent = async (name, username, description, place, city, country, date,userId,rating,capacity, category, ) => {
   console.log("reached api "+ username + " date: "+ date)
   const res = await request("POST","/addevent", {name, username, description, place, city, country, date,userId,rating,capacity, category});
   if(res.status != 200)
@@ -416,3 +416,19 @@ export const triggerArchiving = async () => {
   }
 };
 
+export const getOrganizerRankings = async () => {
+  console.log("Fetching organizer rankings");
+  try {
+    const res = await request("GET", "/organizers/ratings", {});
+    if (res.status === 200) {
+      console.log("Successfully fetched organizer rankings:", res.data);
+      return res.data;
+    } else {
+      console.error("Error fetching organizer rankings. Status:", res.status);
+      throw new Error(`Unable to get organizer rankings: ${res.status}`);
+    }
+  } catch (error) {
+    console.error("Exception while fetching organizer rankings:", error);
+    throw new Error(error.message || "Unable to get organizer rankings");
+  }
+};

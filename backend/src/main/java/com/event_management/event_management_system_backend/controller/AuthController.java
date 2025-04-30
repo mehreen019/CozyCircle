@@ -642,5 +642,10 @@ public ResponseEntity<?> updateEventRating(@RequestBody EventDto ratingRequest) 
     List<Event> recommendedEvents = eventRatingService.recommendEvents(username);
     return ResponseEntity.ok(recommendedEvents);
 }
+    @GetMapping("/organizers/ratings")
+    public ResponseEntity<List<Map<String, Object>>> getOrganizerRankings() {
+        List<Map<String, Object>> organizers = rankingService.getOrganizersRankedByEventRatings();
+        return ResponseEntity.ok(organizers);
+    }
 
 }

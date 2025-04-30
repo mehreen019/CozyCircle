@@ -106,7 +106,7 @@ const CommonViewEvent = () => {
       </Box>
 
       {/* Rating Input Section (If user is logged in and not event creator) */}
-      {canRate && !loading && (
+      {canRate && !prevEvent.archived && !loading && (
         <Box textAlign="center" mb={4}>
           <Typography variant="h6">
             {rated ? "Your Rating" : "Rate this Event"}

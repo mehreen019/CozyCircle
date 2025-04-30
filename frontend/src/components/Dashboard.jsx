@@ -264,7 +264,7 @@ const Dashboard = () => {
           style={{ 
             padding: '8px 16px', 
             marginRight: '10px',
-            backgroundColor: timeTab === 'upcoming' ? '#AE9D99' : '#eee',
+            backgroundColor: timeTab === 'UPCOMING' ? '#AE9D99' : '#eee',
             border: 'none',
             borderRadius: '4px',
             cursor: 'pointer'
@@ -277,7 +277,7 @@ const Dashboard = () => {
           style={{ 
             padding: '8px 16px', 
             marginRight: '10px',
-            backgroundColor: timeTab === 'current' ? '#AE9D99' : '#eee',
+            backgroundColor: timeTab === 'CURRENT' ? '#AE9D99' : '#eee',
             border: 'none',
             borderRadius: '4px',
             cursor: 'pointer'
@@ -289,7 +289,7 @@ const Dashboard = () => {
           onClick={() => setTimeTab('PAST')}
           style={{ 
             padding: '8px 16px',
-            backgroundColor: timeTab === 'past' ? '#AE9D99' : '#eee',
+            backgroundColor: timeTab === 'PAST' ? '#AE9D99' : '#eee',
             border: 'none',
             borderRadius: '4px',
             cursor: 'pointer'

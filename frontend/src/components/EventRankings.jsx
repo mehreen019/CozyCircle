@@ -277,7 +277,10 @@ const EventRankings = () => {
             Back to Analytics
           </Button>
         </Link>
-        <NavigationLink to="/events/category-counts" text="View Category Counts" bg="#AE9D99" textColor="black" />
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <NavigationLink to="/events/category-counts" text="View Category Counts" bg="#AE9D99" textColor="black" />
+          <NavigationLink to="/events/organizer-rankings" text="View Organizer Ranking" bg="#AE9D99" textColor="black" />
+        </div>
       </Box>
       
       <PageTitle variant="h3">

@@ -306,8 +306,8 @@ const ExploreEvents = () => {
           <span className="total-ratings">({event.totalRatings} ratings)</span>
         )}
       </div>
-      {event.capacity && (
-        <div className="event-capacity">Capacity: {event.capacity}</div>
+      {(
+        <div className="event-capacity">Capacity: {event?.capacity ?? 0}</div>
       )}
       <div className="event-actions">
         <Link className="view-btn" to={{ pathname: "/viewCommonEvent" }} state={{ Event: event }}>
@@ -406,8 +406,10 @@ const ExploreEvents = () => {
         <div className="events-content">
           {/* Current Events Section */}
           {!showArchived && (
+            <div>
+            <h1 className="section-title">Upcoming Events</h1>
             <div className="events-grid">
-              <h2 className="section-title">Upcoming Events</h2>
+              
               {loading ? (
                 <div className="loading">Loading events...</div>
               ) : events?.length > 0 ? (
@@ -416,12 +418,15 @@ const ExploreEvents = () => {
                 <div className="no-events">No events found matching your criteria.</div>
               )}
             </div>
+            </div>
           )}
           
           {/* Archived Events Section */}
           {showArchived && (
+            <div>
+            <h2 className="section-title">Archived Events</h2>
             <div className="events-grid archived-grid">
-              <h2 className="section-title">Archived Events</h2>
+              
               {archivedLoading ? (
                 <div className="loading">Loading archived events...</div>
               ) : archivedEvents?.length > 0 ? (
@@ -430,6 +435,7 @@ const ExploreEvents = () => {
                 <div className="no-events">No archived events found.</div>
               )}
             </div>
+            </div> 
           )}
         </div>
       </div>
