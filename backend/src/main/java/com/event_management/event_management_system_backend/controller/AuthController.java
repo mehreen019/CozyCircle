@@ -18,8 +18,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -60,6 +63,12 @@ public class AuthController {
 
     @Autowired
     private WaitListService waitListService;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @PostMapping("/login")
     public ResponseEntity<AdminDto> login(@RequestBody @Valid CredentialsDto credentialsDto){
@@ -343,7 +352,6 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
         return ResponseEntity.ok(response);
     }
 
-    // Update the unregister endpoint to handle waitlist promotion
     @DeleteMapping("/unregister")
     public ResponseEntity<?> unregister(@RequestParam Long eventId, @RequestParam String email) {
         System.out.println("Attempting to unregister email: " + email + " from event ID: " + eventId);
@@ -354,15 +362,15 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
             return ResponseEntity.badRequest().body("User was not registered to this event");
         }
 
-        // Delete the attendee
-        attendeeRepository.delete(attendeeOptional.get());
-
         Optional<Event> eventOptional = eventRepository.findById(eventId);
         if (!eventOptional.isPresent()) {
             return ResponseEntity.badRequest().body("Event not found");
         }
 
         Event event = eventOptional.get();
+
+        // Delete the attendee
+        attendeeRepository.delete(attendeeOptional.get());
 
         System.out.println("ATTEMPTING TO UNREGISTER PLEASE: " + eventId);
 
@@ -378,6 +386,7 @@ public ResponseEntity<EventDto> addEvent(@RequestBody @Valid EventDto eventDto){
 
         return ResponseEntity.ok("Successfully unregistered from event. Someone from the waitlist has been registered.");
     }
+
 
 
     @PostMapping("/events/rate")
