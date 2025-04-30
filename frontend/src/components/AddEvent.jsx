@@ -10,6 +10,7 @@ import NavigationLink from './shared/NavigationLink';
 
 const AddEvent = () => {
   const [category, setCategory] = useState('');
+  const [formErrors, setFormErrors] = useState({});
   const auth = useAuth();
   const navigate = useNavigate();
 
@@ -21,13 +22,50 @@ const AddEvent = () => {
 
   const handleCategoryChange = (event) => {
     setCategory(event.target.value);
+    setFormErrors({...formErrors, category: ''});
+  };
+
+  const validateForm = (formData) => {
+    const errors = {};
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+
+    const fields = ['name', 'description', 'place', 'city', 'country', 'date', 'capacity'];
+    fields.forEach(field => {
+      if (!formData.get(field)) {
+        errors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+        toast.error(`${field.charAt(0).toUpperCase() + field.slice(1)} is required`);
+      }
+    });
+
+    if (!category) {
+      errors.category = 'Category is required';
+      toast.error('Category is required');
+    }
+    
+    const selectedDate = new Date(formData.get('date'));
+    if (selectedDate < today) {
+      errors.date = 'Cannot create events with past dates';
+      toast.error('Cannot create events with past dates');
+    }
+    
+    return errors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
+    
 
-    const name = data.get("name"); //we get by name
+    const errors = validateForm(data);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      toast.error("Please fix the form errors");
+      return;
+    }
+
+    const name = data.get("name");
     const description = data.get("description");
     const place = data.get("place");
     const city = data.get("city");
@@ -42,22 +80,30 @@ const AddEvent = () => {
       const response = await addEvent(name, username, description, place, city, country, date, userId, rating, capacity, category);
       console.log(response);
 
-      toast.loading("Event Added Successfully");
+      toast.success("Event Added Successfully");
       setTimeout(() => {
-        toast.dismiss();
+        navigate("/dashboard");
       }, 3000);
     } catch (error) {
       console.log(error);
-      toast.loading("Event couldn't be added");
-      setTimeout(() => {
-        toast.dismiss();
-      }, 3000);
+      toast.error("Event couldn't be added");
     }
-
-    console.log(username + " and " + name + " " + userId + " category: " + category);
   }
 
   const categories = ['Concert', 'Conference', 'Festival', 'Sports', 'Workshop', 'Music', 'Tech', 'Other'];
+
+  // Helper function to set min date to today
+  const getTodayString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    let month = today.getMonth() + 1;
+    let day = today.getDate();
+    
+    month = month < 10 ? `0${month}` : month;
+    day = day < 10 ? `0${day}` : day;
+    
+    return `${year}-${month}-${day}`;
+  };
 
   return (
     <Box
@@ -86,29 +132,92 @@ const AddEvent = () => {
           >
           New Event
           </Typography>
-          <CustomizedInput type="name" name="name" label="Name" />
-          <CustomizedInput type="description" name="description" label="Description" />
-          <CustomizedInput type="place" name="place" label="Place" />
-          <CustomizedInput type="city" name="city" label="City" />
-          <CustomizedInput type="country" name="country" label="Country" />
-          <CustomizedInput type="date" name="date" label="Date" />
-          <CustomizedInput type="number" name="capacity" label="Capacity" />
+          <CustomizedInput 
+            type="text" 
+            name="name" 
+            label="Name" 
+            required 
+            error={!!formErrors.name}
+            helperText={formErrors.name}
+            onChange={() => setFormErrors({...formErrors, name: ''})}
+          />
+          <CustomizedInput 
+            type="text" 
+            name="description" 
+            label="Description" 
+            required
+            error={!!formErrors.description}
+            helperText={formErrors.description}
+            onChange={() => setFormErrors({...formErrors, description: ''})}
+          />
+          <CustomizedInput 
+            type="text" 
+            name="place" 
+            label="Place" 
+            required
+            error={!!formErrors.place}
+            helperText={formErrors.place}
+            onChange={() => setFormErrors({...formErrors, place: ''})}
+          />
+          <CustomizedInput 
+            type="text" 
+            name="city" 
+            label="City" 
+            required
+            error={!!formErrors.city}
+            helperText={formErrors.city}
+            onChange={() => setFormErrors({...formErrors, city: ''})}
+          />
+          <CustomizedInput 
+            type="text" 
+            name="country" 
+            label="Country" 
+            required
+            error={!!formErrors.country}
+            helperText={formErrors.country}
+            onChange={() => setFormErrors({...formErrors, country: ''})}
+          />
+          <CustomizedInput 
+            type="date" 
+            name="date" 
+            label="Date" 
+            required
+            inputProps={{ min: getTodayString() }}
+            error={!!formErrors.date}
+            helperText={formErrors.date}
+            onChange={() => setFormErrors({...formErrors, date: ''})}
+          />
+          <CustomizedInput 
+            type="number" 
+            name="capacity" 
+            label="Capacity" 
+            required
+            inputProps={{ min: 1 }}
+            error={!!formErrors.capacity}
+            helperText={formErrors.capacity}
+            onChange={() => setFormErrors({...formErrors, capacity: ''})}
+          />
 
-
-          <FormControl fullWidth sx={{ my: 1 }}>
-            <InputLabel id="category-select-label">Category</InputLabel>
+          <FormControl fullWidth sx={{ my: 1 }} error={!!formErrors.category}>
+            <InputLabel id="category-select-label">Category *</InputLabel>
             <Select
               labelId="category-select-label"
               id="category-select"
               value={category}
-              label="Category"
+              label="Category *"
               onChange={handleCategoryChange}
               sx={{ width: '400px', mb: 1 }}
+              required
             >
               {categories.map((cat) => (
                 <MenuItem key={cat} value={cat}>{cat}</MenuItem>
               ))}
             </Select>
+            {formErrors.category && (
+              <Typography color="error" variant="caption" sx={{ ml: 2 }}>
+                {formErrors.category}
+              </Typography>
+            )}
           </FormControl>
         
           <Button

@@ -7,6 +7,8 @@ import './Popup.css'
 import { getAttendees } from '../helpers/api_communicator';
 import NavigationLink from './shared/NavigationLink';
 import { format } from "date-fns";
+import { unregisterUser } from '../helpers/api_communicator';
+import { toast } from 'react-hot-toast';
 
 const ViewEvent = () => {
 
@@ -44,6 +46,33 @@ const ViewEvent = () => {
     } catch (error) {
       console.error("Error loading attendees:", error);
     }
+  };
+
+  const handleUnregisterClick = async (event) => {
+      if (!auth?.user) {
+        toast.error("You must be logged in to unregister.");
+        return;
+      }
+    
+      try {
+        toast.info("Unregistering...", { autoClose: 2000 });
+    
+        const response = await unregisterUser(event.id, auth.user.email);
+  
+        console.log(response);
+    
+        if (response.status === 200) {
+          toast.success("Unregistered Successfully!", { autoClose: 3000 });
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to unregister. Try again.");
+      }
+      finally{
+         navigate("/dashboard");
+      }
+
+     
   };
   
 
@@ -95,13 +124,12 @@ const ViewEvent = () => {
                 />
               )
             : (
-              <NavigationLink
-                  bg="#AE9D99"
-                  to={`/${prevEvent.id}/waitlist-view`}
-                  state={{ Event: prevEvent }}
-                  text="Unregister"
-                  textColor="black" 
-                />
+              <button
+                  style={{ backgroundColor: "#AE9D99", color: "black", border: "none", borderRadius: "4px", cursor: "pointer", padding: "8px 16px", textAlign: "center", fontWeight: "600", fontSize: "18px" }}
+                  onClick={handleUnregisterClick}
+                >
+                  Unregister
+              </button>
               )}
 
               <NavigationLink

@@ -10,9 +10,9 @@ CREATE TRIGGER before_event_insert_update
     BEFORE INSERT ON event
     FOR EACH ROW
 BEGIN
-    IF NEW.date = CURRENT_DATE() THEN
+    IF DATE(NEW.date) = CURRENT_DATE() THEN
         SET NEW.time_category = 'CURRENT';
-    ELSEIF NEW.date > CURRENT_DATE() THEN
+    ELSEIF DATE(NEW.date) > CURRENT_DATE() THEN
         SET NEW.time_category = 'UPCOMING';
     ELSE
         SET NEW.time_category = 'PAST';
@@ -50,8 +50,8 @@ CREATE EVENT update_event_time_categories
     BEGIN
         UPDATE event
         SET time_category = CASE
-                                WHEN date = CURRENT_DATE() THEN 'CURRENT'
-                                WHEN date > CURRENT_DATE() THEN 'UPCOMING'
+                                WHEN DATE(date) = CURRENT_DATE() THEN 'CURRENT'
+                                WHEN DATE(date) > CURRENT_DATE() THEN 'UPCOMING'
                                 ELSE 'PAST'
             END;
     END;
@@ -61,7 +61,7 @@ DELIMITER ;
 
 UPDATE event
 SET time_category = CASE
-                        WHEN date = CURRENT_DATE() THEN 'CURRENT'
-                        WHEN date > CURRENT_DATE() THEN 'UPCOMING'
+                        WHEN DATE(date) = CURRENT_DATE() THEN 'CURRENT'
+                        WHEN DATE(date) > CURRENT_DATE() THEN 'UPCOMING'
                         ELSE 'PAST'
     END;
