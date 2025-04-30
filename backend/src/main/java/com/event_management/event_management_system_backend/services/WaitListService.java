@@ -67,7 +67,7 @@ public class WaitListService {
     public void removeFromWaitlist(Long eventId, String email) {
         Optional<WaitList> waitlistEntry = waitlistRepository.findByEventidAndEmail(eventId, email);
 
-        System.out.println(waitlistEntry.isPresent() + "WAITLIST REMOVE STATUS");
+        System.out.println(waitlistEntry.isPresent() + " WAITLIST REMOVE STATUS");
 
         if (waitlistEntry.isPresent()) {
             Integer position = waitlistEntry.get().getPosition();
@@ -81,7 +81,7 @@ public class WaitListService {
     /**
      * Promote the first person from the waitlist to attendee
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public boolean promoteFromWaitlist(Long eventId) {
         try {
             // Find the first person on the waitlist
@@ -92,23 +92,31 @@ public class WaitListService {
             }
 
             WaitList entry = firstWaitlisted.get();
+            String promotedEmail = entry.getEmail();
+            String promotedName = entry.getName();
+            Integer position = entry.getPosition();
 
-            // Create a new Attendee entity
+            // Get the max ID from attendee table and increment
+            Long maxAttendeeId = attendeeRepository.findMaxId();
+            Long newAttendeeId = (maxAttendeeId != null) ? maxAttendeeId + 1 : 1L;
+
+            // Create a new Attendee entity with explicit ID
             Attendee attendee = new Attendee();
+            attendee.setId(newAttendeeId);
             attendee.setEventid(eventId);
-            attendee.setName(entry.getName());
-            attendee.setEmail(entry.getEmail());
+            attendee.setName(promotedName);
+            attendee.setEmail(promotedEmail);
 
-            // Get the max ID and set manually
-            Long maxId = attendeeRepository.findMaxId();
-            attendee.setId(maxId + 1);
-
-            // Save the attendee
+            // Save the attendee with explicit ID
             attendeeRepository.save(attendee);
 
-            // Remove from waitlist
-            removeFromWaitlist(eventId, entry.getEmail());
+            // Remove from waitlist - do this manually to ensure atomic operation
+            waitlistRepository.deleteByEventidAndEmail(eventId, promotedEmail);
 
+            // Update positions for everyone after this person
+            waitlistRepository.decrementPositionsAfter(eventId, position);
+
+            System.out.println("Promoted " + promotedName + " (" + promotedEmail + ") to attendee with ID: " + newAttendeeId);
             return true;
         } catch (Exception e) {
             // Log the error
