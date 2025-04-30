@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
 import { request } from '../helpers/axios_helper';
-import { getUserRatingForEvent } from '../helpers/api_communicator';
+import { getUserRatingForEvent, checkRegistrationStatus } from '../helpers/api_communicator';
 
 const CommonViewEvent = () => {
   const location = useLocation();
@@ -17,22 +17,32 @@ const CommonViewEvent = () => {
   const [userRating, setUserRating] = useState(0);
   const [rated, setRated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isRegistered, setIsRegistered] = useState(false);
 
-  const canRate = auth.isLoggedIn && prevEvent.username !== auth.user.username;
+  // Check if user can rate (logged in and not event creator)
+  const userCanPotentiallyRate = auth.isLoggedIn && prevEvent.username !== auth.user.username;
 
-  // Fetch the user's previous rating when component mounts
+  // Check registration status and user rating when component mounts
   useEffect(() => {
-    const fetchUserRating = async () => {
-      if (canRate && auth.user?.id) {
+    const checkUserStatus = async () => {
+      if (userCanPotentiallyRate && auth.user?.email) {
         try {
           setLoading(true);
-          const rating = await getUserRatingForEvent(prevEvent.id, auth.user.id);
-          if (rating > 0) {
-            setUserRating(rating);
-            setRated(true);
+
+          // Check if user is registered for the event
+          const registrationStatus = await checkRegistrationStatus(prevEvent.id, auth.user.email);
+          setIsRegistered(registrationStatus.status === "registered");
+
+          // If user is registered, check their previous rating
+          if (registrationStatus.status === "registered" && auth.user?.id) {
+            const rating = await getUserRatingForEvent(prevEvent.id, auth.user.id);
+            if (rating > 0) {
+              setUserRating(rating);
+              setRated(true);
+            }
           }
         } catch (error) {
-          console.error("Error fetching user rating:", error);
+          console.error("Error checking user status:", error);
         } finally {
           setLoading(false);
         }
@@ -41,8 +51,8 @@ const CommonViewEvent = () => {
       }
     };
 
-    fetchUserRating();
-  }, [canRate, prevEvent.id, auth.user?.id]);
+    checkUserStatus();
+  }, [userCanPotentiallyRate, prevEvent.id, auth.user?.id, auth.user?.email]);
 
   const handleRatingSubmit = async () => {
     try {
@@ -101,12 +111,19 @@ const CommonViewEvent = () => {
       {/* Rating Display Section */}
       <Box textAlign="center" mb={4}>
         <Typography variant="h6" mb={1}>Event Rating</Typography>
-        <Rating value={prevEvent.rating || 0} precision={0.1} readOnly />
-        <Typography variant="body2" mt={1}>Average Rating: {prevEvent.rating || 0} / 5</Typography>
+        <Rating 
+          value={prevEvent.averageRating || prevEvent.rating || 0} 
+          precision={0.1} 
+          readOnly 
+        />
+        <Typography variant="body2" mt={1}>
+          Average Rating: {(prevEvent.averageRating || prevEvent.rating || 0).toFixed(1)} / 5
+          {prevEvent.totalRatings > 0 && ` (${prevEvent.totalRatings} ratings)`}
+        </Typography>
       </Box>
 
-      {/* Rating Input Section (If user is logged in and not event creator) */}
-      {canRate && !prevEvent.archived && !loading && (
+      {/* Rating Input Section (If user is logged in, not event creator, and registered for the event) */}
+      {userCanPotentiallyRate && isRegistered && !prevEvent.archived && !loading && (
         <Box textAlign="center" mb={4}>
           <Typography variant="h6">
             {rated ? "Your Rating" : "Rate this Event"}
@@ -131,6 +148,15 @@ const CommonViewEvent = () => {
               {userRating > 0 ? "You've rated this event!" : ""}
             </Typography>
           )}
+        </Box>
+      )}
+
+      {/* Show message if user is not registered but could potentially rate */}
+      {userCanPotentiallyRate && !isRegistered && !loading && (
+        <Box textAlign="center" mb={4}>
+          <Typography color="error">
+            You must be registered for this event to rate it.
+          </Typography>
         </Box>
       )}
 

@@ -288,6 +288,23 @@ export const getUserRatingForEvent = async (eventId, userId) => {
   }
 };
 
+export const checkRegistrationStatus = async (eventId, email) => {
+  console.log("Checking registration status for event ID:", eventId, "and email:", email);
+  try {
+    const res = await request("GET", `/check-registration-status?eventId=${eventId}&email=${email}`, {});
+    if (res.status === 200) {
+      console.log("Registration status response:", res.data);
+      return res.data;
+    } else {
+      console.error("Error checking registration status. Status:", res.status);
+      throw new Error(`Unable to check registration status: ${res.status}`);
+    }
+  } catch (error) {
+    console.error("Exception while checking registration status:", error);
+    throw new Error(error.message || "Unable to check registration status");
+  }
+};
+
 // Get user score by email
 export const getUserScore = async (email) => {
   console.log("Fetching user score for email:", email);
