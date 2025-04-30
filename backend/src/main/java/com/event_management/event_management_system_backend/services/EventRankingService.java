@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -103,5 +104,24 @@ public class EventRankingService {
 
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * Get organizers ranked by their events' average ratings
+     */
+    public List<Map<String, Object>> getOrganizersRankedByEventRatings() {
+        List<Map<String, Object>> rankedOrganizers = eventRepository.findOrganizersRankedByEventRatings();
+        return rankedOrganizers.stream()
+                .map(organizer -> {
+                    Map<String, Object> formattedOrganizer = new HashMap<>();
+                    formattedOrganizer.put("id", ((Number) organizer.get("admin_id")).longValue());
+                    formattedOrganizer.put("username", organizer.get("username"));
+                    formattedOrganizer.put("name", organizer.get("name"));
+                    formattedOrganizer.put("eventCount", ((Number) organizer.get("event_count")).intValue());
+                    formattedOrganizer.put("averageRating", ((Number) organizer.get("average_event_rating")).doubleValue());
+                    formattedOrganizer.put("rank", ((Number) organizer.get("rating_rank")).intValue());
+                    return formattedOrganizer;
+                })
+                .collect(Collectors.toList());
     }
 } 

@@ -22,6 +22,7 @@ import EventCategoryCount from './components/EventCategoryCount'
 import UserProfile from './components/UserProfile'
 import Leaderboard from './components/Leaderboard'
 import WaitlistView from './components/WaitlistView'
+import OrganizerRankings from './components/OrganizerRanking'
 
 function App() {
 
@@ -46,6 +47,7 @@ function App() {
         <Route path="/ExploreEvent" element={<ExploreEvents/>} />
         <Route path="/count/:eventId" element={<TotalRatingsPage/>} />
         <Route path= "/events/category-counts" element={<EventCategoryCount/>} />
+        <Route path="/events/organizer-rankings" element={<OrganizerRankings/>} />
         <Route path='/:eventId/waitlist-view' element={<WaitlistView/>} />
        
 

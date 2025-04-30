@@ -235,4 +235,21 @@ List<Event> findTopRatedEvents();
             @Param("archived") Boolean archived
     );
 
+    @Query(value = """
+    SELECT a.id as admin_id, a.username, a.name, 
+           COUNT(e.id) as event_count,
+           COALESCE(AVG(er.average_rating), 0.0) as average_event_rating,
+           DENSE_RANK() OVER (ORDER BY COALESCE(AVG(er.average_rating), 0.0) DESC) as rating_rank
+    FROM admin a
+    LEFT JOIN event e ON a.username = e.username
+    LEFT JOIN (
+        SELECT event_id, AVG(rating) as average_rating
+        FROM event_ratings
+        GROUP BY event_id
+    ) er ON e.id = er.event_id
+    GROUP BY a.id, a.username, a.name
+    ORDER BY average_event_rating DESC, event_count DESC
+    """, nativeQuery = true)
+    List<Map<String, Object>> findOrganizersRankedByEventRatings();
+
 }
