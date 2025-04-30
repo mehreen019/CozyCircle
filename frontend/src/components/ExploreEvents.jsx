@@ -98,12 +98,13 @@ const ExploreEvents = () => {
     try {
       const filterParams = prepareFilterParams();
       const response = await filterEvents(filterParams);
-      setEvents(formatEvents(response));
+      console.log("Filtered Events:", response);
+      setEvents(response);
     } catch (error) {
       console.error('Error fetching events:', error);
       try {
         const allEvents = await getAllEvents();
-        setEvents(formatEvents(allEvents));
+        setEvents(allEvents);
       } catch (fallbackError) {
         console.error('Fallback error:', fallbackError);
         toast.error('Failed to load events. Please try again later.');
@@ -119,12 +120,12 @@ const ExploreEvents = () => {
     try {
       const filterParams = prepareFilterParams();
       const response = await filterArchivedEvents(filterParams);
-      setArchivedEvents(formatEvents(response));
+      setArchivedEvents(response);
     } catch (error) {
       console.error('Error fetching archived events:', error);
       try {
         const allArchivedEvents = await getArchivedEvents();
-        setArchivedEvents(formatEvents(allArchivedEvents));
+        setArchivedEvents(allArchivedEvents);
       } catch (fallbackError) {
         console.error('Fallback error:', fallbackError);
         toast.error('Failed to load archived events. Please try again later.');
@@ -413,7 +414,9 @@ const ExploreEvents = () => {
               
               {loading ? (
                 <div className="loading">Loading events...</div>
-              ) : events?.length > 0 ? (
+              ) : events
+              .filter(event => !archivedEvents.some(archived => archived.id === event.id))
+              .map(event => renderEventCard(event, false))?.length > 0 ? (
                 events
                   .filter(event => !archivedEvents.some(archived => archived.id === event.id))
                   .map(event => renderEventCard(event, false))
